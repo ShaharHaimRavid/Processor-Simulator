@@ -78,6 +78,7 @@ typedef enum
 typedef struct
 {
 	uint32_t do_work;
+	bool_t action_success;
 	uint16_t pc;
 	uint32_t instruction;
 
@@ -105,7 +106,6 @@ typedef struct
 	instruction_memory_t *imem;
 	cache_t *cache;
 	uint32_t registers[16];
-	main_memory_bus_t *mem_bus;
 
 	// pipeline states:
 	instruction_fetch_state fetch;
@@ -118,7 +118,7 @@ typedef struct
 void register_write(uint32_t *regs, uint16_t addr, uint32_t data);
 uint32_t register_read(uint32_t *regs, uint16_t addr);
 
-void core_init(core_t *core, core_files_t *files, main_memory_bus_t *mem_bus);
+void core_init(core_t* core, core_files_t* files, cache_t* cache);
 void core_free(core_t *core);
 
 void core_instruction_fetch(core_t *core);

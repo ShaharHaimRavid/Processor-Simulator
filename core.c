@@ -22,12 +22,10 @@ uint32_t register_read(uint32_t *regs, uint16_t addr)
 	return regs[addr];
 }
 
-void core_init(core_t *core, core_files_t *files, main_memory_bus_t *mem_bus)
+void core_init(core_t *core, core_files_t *files, cache_t *cache)
 {
 	core->files = files;
-	core->imem = (instruction_memory_t *)calloc(1, sizeof(instruction_memory_t));
-	core->cache = (cache_t *)calloc(1, sizeof(cache_t));
-	core->mem_bus = mem_bus;
+	core->cache = cache;
 	for (int i = 0; i < 16; i++)
 		core->registers[i] = 0;
 
@@ -134,8 +132,9 @@ void core_instruction_decode(core_t *core)
 	int num_stalls = core_is_data_hazard(core);
 	if (num_stalls)
 	{
-		core->fetch.stalls = num_stalls;
-		core->decode.stalls = num_stalls;
+
+		core->fetch.stalls = max(num_stalls, core->fetch.stalls);
+		core->decode.stalls = max(num_stalls, core->decode.stalls);
 		core->execute.do_work = 0;
 		core->memory_access.do_work = 0;
 		core->write_back.do_work = 0;
@@ -198,15 +197,6 @@ void core_execute(core_t *core)
 	if (!core->execute.do_work)
 		return;
 
-	core->memory_access.pc = core->execute.pc;
-	core->memory_access.opcode = core->execute.opcode;
-	core->memory_access.instruction = core->execute.instruction;
-	core->memory_access.rtv = core->execute.rtv;
-	core->memory_access.rd = core->execute.rd;
-	core->memory_access.rdv = core->execute.rdv;
-	core->memory_access.state = MEM_ACCESS_NONE;
-	core->memory_access.do_work = 1;
-
 	// execute instruction
 	switch (core->execute.opcode)
 	{
@@ -261,6 +251,18 @@ void core_execute(core_t *core)
 		// TODO: implement halt instruction
 		break;
 	}
+
+	if (!core->memory_access.action_success)
+		return;
+
+	core->memory_access.pc = core->execute.pc;
+	core->memory_access.opcode = core->execute.opcode;
+	core->memory_access.instruction = core->execute.instruction;
+	core->memory_access.rtv = core->execute.rtv;
+	core->memory_access.rd = core->execute.rd;
+	core->memory_access.rdv = core->execute.rdv;
+	core->memory_access.state = MEM_ACCESS_NONE;
+	core->memory_access.do_work = 1;
 	core->memory_access.alu_result = core->execute.alu_result;
 }
 
@@ -282,11 +284,21 @@ void core_memory_access(core_t *core)
 	if (core->memory_access.state == MEM_ACCESS_READ)
 	{
 		// if the memory access is a read, read the data from memory and replace the mem_data value
-		main_memory_read(core->mem_bus, core->memory_access.alu_result, &core->write_back.mem_data);
+		core->memory_access.action_success = cache_read(core->cache, core->memory_access.alu_result, &core->write_back.mem_data);
 	}
 	else if (core->memory_access.state == MEM_ACCESS_WRITE)
 	{
-		main_memory_write(core->mem_bus, core->memory_access.alu_result, core->memory_access.rdv);
+		core->memory_access.action_success = cache_write(core->cache, core->memory_access.alu_result, core->memory_access.rdv);
+	}
+
+	if (!core->memory_access.action_success)
+	{
+		// stall the pipeline
+		core->fetch.stalls = max(1, core->fetch.stalls);
+		core->decode.stalls = max(1, core->decode.stalls);
+		core->execute.do_work = 1;
+		core->memory_access.do_work = 1;
+		core->write_back.do_work = 0;
 	}
 }
 

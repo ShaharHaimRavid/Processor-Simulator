@@ -6,3 +6,7 @@ typedef long long int int64_t;
 typedef int int32_t;
 typedef short int16_t;
 typedef char int8_t;
+typedef uint8_t bool_t;
+
+#define TRUE 1
+#define FALSE 0
