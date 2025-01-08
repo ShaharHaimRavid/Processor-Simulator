@@ -117,6 +117,7 @@ typedef struct
 
 void register_write(uint32_t *regs, uint16_t addr, uint32_t data);
 uint32_t register_read(uint32_t *regs, uint16_t addr);
+void registers_save(core_t* core, FILE* regout);
 
 void core_init(core_t* core, core_files_t* files, cache_t* cache);
 void core_free(core_t *core);

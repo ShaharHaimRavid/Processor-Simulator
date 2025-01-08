@@ -22,6 +22,12 @@ uint32_t register_read(uint32_t *regs, uint16_t addr)
 	return regs[addr];
 }
 
+void registers_save(core_t* core, FILE* regout) {
+	for (int i = 0; i < 16; i++) {
+		fprintf(regout, "%08X\n", core->registers[i]);
+	}
+}
+
 void core_init(core_t *core, core_files_t *files, cache_t *cache)
 {
 	core->files = files;

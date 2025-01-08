@@ -178,3 +178,34 @@ void cache_write(cache_t *c, uint32_t addr, uint32_t data)
 	c->data[index_of_block][offset] = data;
 	c->metadata[index_of_block] = tag | MESI_MODIFIED << 12;
 }
+
+// Save the data array of the cache to the dsram file
+void dsram_save(cache_t* c, FILE* dsram) {
+	// Validate inputs
+	if (!c || !dsram) {
+		return;
+	}
+
+	// Iterate over the 64 blocks in the cache
+	for (int i = 0; i < 64; i++) {
+		// Each block contains 4 words
+		for (int j = 0; j < 4; j++) {
+			// Print each word as 8 hexadecimal digits
+			fprintf(dsram, "%08X\n", c->data[i][j]);
+		}
+	}
+}
+
+// Save the metadata array of the cache to the tsram file
+void tsram_save(cache_t* c, FILE* tsram) {
+	// Validate inputs
+	if (!c || !tsram) {
+		return;
+	}
+
+	// Iterate over the 64 metadata entries in the cache
+	for (int i = 0; i < 64; i++) {
+		// Print each metadata entry as 8 hexadecimal digits (extending with zeros to fill 32 bits)
+		fprintf(tsram, "%08X\n", c->metadata[i]);
+	}
+}
