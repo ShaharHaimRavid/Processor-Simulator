@@ -1,5 +1,4 @@
 #include "main_memory.h"
-#include "common.h"
 
 bool_t main_memory_bus_action_main_mem(bus_addr_t addr, bus_command_t cmd, block *data, bool_t *shared, void *user_data)
 {
@@ -30,12 +29,13 @@ void main_memory_bus_snoop_observe(main_memory_bus_t *bus, bus_origid_t id, bus_
     bus->observers_data[id] = user_data;
 }
 
-void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem)
+void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem, arbitor_t *arbitor)
 {
     bus->bustrace_file = bustrace;
     bus->memory = *mem;
     mem->bus_data = bus;
     mem->bus_action = main_memory_bus_action;
+    bus->arbitor = arbitor;
 }
 
 void main_memory_init(main_memory_t *mem)
@@ -90,6 +90,5 @@ void main_memory_save(main_memory_t *mem, FILE *memout)
     }
 }
 
-void main_memory_clk(main_memory_t *bus) {}
 bool_t main_memory_bus_action(main_memory_t *bus, bus_addr_t addr, bus_command_t cmd, block *data, bool_t *shared) { return TRUE; }
 bool_t main_memory_bus_write(main_memory_t *bus, bus_addr_t addr, block data) { return TRUE; }

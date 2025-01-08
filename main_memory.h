@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "common.h"
+#include "arbitor.h"
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -52,9 +53,10 @@ typedef struct
 	bool_t transaction_open;
 	uint16_t flush_count;
 	bus_origid_t transaction_origid;
+
+	arbitor_t *arbitor
 } main_memory_bus_t;
 
-void main_memory_clk(main_memory_t *bus);
 bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_addr_t addr, bus_command_t cmd, block *data, bool_t *shared);
 bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data);
 

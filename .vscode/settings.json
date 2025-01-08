@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "main_memory.h": "c",
+    "arbitor.h": "c"
+  }
+}

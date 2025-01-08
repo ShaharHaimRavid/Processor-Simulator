@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define NUM_CORES 4
+
 typedef unsigned long long int uint64_t;
 typedef unsigned int uint32_t;
 typedef unsigned short uint16_t;

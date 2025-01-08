@@ -8,7 +8,6 @@
 #include "main_memory.h"
 #include "core.h"
 
-#define NUM_CORES 4
 #define GET_ARG(argc, argv, i, default_val) (argc == 0 ? argv[i] : default_val);
 
 static void parse_args(int argc, char *argv[], core_files_t *core_files, mem_files_t *mem_files)
@@ -97,24 +96,27 @@ int main(int argc, char *argv[])
 	// ========================================================
 	//	Initialize datastructures
 	// ========================================================
+	arbitor_t arbitor;
+	arbitor_init(&arbitor);
+
 	// Initialize main memory structure (File -> Struct)
 	main_memory_t main_mem;
 	main_memory_init(&main_mem);
 	main_memory_load(&main_mem, mem_files.memin);
 
 	main_memory_bus_t main_mem_bus;
-	main_memory_bus_init(&main_mem_bus, mem_files.bustrace, &main_mem);
+	main_memory_bus_init(&main_mem_bus, mem_files.bustrace, &main_mem, &arbitor);
 
 	// Initialize caches and assign them to cores
-	cache_t caches[4];
-	for (int i = 0; i < 4; i++)
+	cache_t caches[NUM_CORES];
+	for (int i = 0; i < NUM_CORES; i++)
 	{
 		cache_init(&caches[i], &main_mem_bus, i);
 	}
 
 	// Initialize cores and their registers
-	core_t cores[4];
-	for (int i = 0; i < 4; i++)
+	core_t cores[NUM_CORES];
+	for (int i = 0; i < NUM_CORES; i++)
 	{
 		core_init(&cores[i], &core_files[i], &caches[i]);
 	}
@@ -122,7 +124,17 @@ int main(int argc, char *argv[])
 	// ========================================================
 	//	Simulation
 	// ========================================================
-	// The rest of the simulation code would go here
+	while (!is_halted(&cores[0]) || !is_halted(&cores[1]) || !is_halted(&cores[2]) || !is_halted(&cores[3]))
+	{
+		// we call the core_clk function for each core in the priorized order
+		// to verify the correct core gets the memory access transaction
+		bus_origid_t bus_origid[NUM_CORES];
+		int n = arbitor_prioritize(&arbitor, &bus_origid);
+		for (int i = 0; i < NUM_CORES; i++)
+		{
+			core_clk(&cores[i]);
+		}
+	}
 
 	// ========================================================
 	//	Save data to output files

@@ -46,6 +46,7 @@ void core_init(core_t *core, core_files_t *files, cache_t *cache)
 {
 	core->files = files;
 	core->cache = cache;
+	core->halted = FALSE;
 	for (int i = 0; i < 16; i++)
 		core->registers[i] = 0;
 
@@ -89,6 +90,8 @@ void core_free(core_t *core)
 
 void core_instruction_fetch(core_t *core)
 {
+	if (core->halted)
+		return;
 	if (core->fetch.stalls)
 	{
 		core->fetch.stalls--;
@@ -128,6 +131,8 @@ int core_is_data_hazard(core_t *core)
 
 void core_instruction_decode(core_t *core)
 {
+	if (core->halted)
+		return;
 	if (core->decode.stalls)
 	{
 		core->decode.stalls--;
@@ -207,6 +212,8 @@ void core_instruction_decode(core_t *core)
 
 void core_execute(core_t *core)
 {
+	if (core->halted)
+		return;
 	if (!core->execute.do_work)
 		return;
 
@@ -261,7 +268,9 @@ void core_execute(core_t *core)
 		core->memory_access.state = MEM_ACCESS_WRITE;
 		break;
 	case OPCODE_HALT:
-		// TODO: implement halt instruction
+		core->halted = TRUE;
+		core->memory_access.do_work = 0;
+		core->write_back.do_work = 0;
 		break;
 	}
 

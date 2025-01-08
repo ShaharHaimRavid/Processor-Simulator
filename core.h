@@ -107,6 +107,8 @@ typedef struct
 	uint64_t decode_stall_count;
 	uint64_t mem_stall_count;
 
+	bool_t halted;
+
 	core_files_t *files;
 	instruction_memory_t *imem;
 	cache_t *cache;
@@ -124,6 +126,10 @@ void register_write(uint32_t *regs, uint16_t addr, uint32_t data);
 uint32_t register_read(uint32_t *regs, uint16_t addr);
 
 void core_clk(core_t *core);
+bool_t is_halted(core_t *core)
+{
+	return core->halted;
+}
 
 void core_init(core_t *core, core_files_t *files, cache_t *cache);
 void core_save(core_t *core);
