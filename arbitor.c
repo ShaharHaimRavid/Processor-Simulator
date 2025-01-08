@@ -1,31 +1,38 @@
 #include "arbitor.h"
 #include "common.h"
 
-void arbitor_on_transaction_start(arbitor_t *arbitor, bus_origid_t origid)
+void arbitor_on_transaction_start(arbitor_t *arbitor, int core_id)
 {
     arbitor->is_transaction_open = TRUE;
-    arbitor->transaction_origid = origid;
+    arbitor->transaction_core_id = core_id;
 }
-void arbitor_on_transaction_end(arbitor_t *arbitor, bus_origid_t origid)
+void arbitor_on_transaction_end(arbitor_t *arbitor, int core_id)
 {
     arbitor->is_transaction_open = FALSE;
     for (int i = 0; i < NUM_CORES - 1; i++)
     {
-        if (arbitor->prioritized_origids[i] != origid)
+        if (arbitor->prioritized_core_ids[i] != core_id)
         {
             continue;
         }
 
         for (int j = i; j < NUM_CORES - 1; j++)
         {
-            arbitor->prioritized_origids[j] = arbitor->prioritized_origids[j + 1];
+            arbitor->prioritized_core_ids[j] = arbitor->prioritized_core_ids[j + 1];
         }
-        arbitor->prioritized_origids[NUM_CORES - 1] = origid;
+        arbitor->prioritized_core_ids[NUM_CORES - 1] = core_id;
         break;
     }
 }
-int arbitor_prioritize(arbitor_t *arbitor, bus_origid_t *prioritized_origid[])
+int *arbitor_prioritize(arbitor_t *arbitor)
 {
-    *prioritized_origid = arbitor->prioritized_origids;
-    return NUM_CORES;
+    return arbitor->prioritized_core_ids;
+}
+void arbitor_init(arbitor_t* arbitor)
+{
+    arbitor->is_transaction_open = FALSE;
+    for (int i = 0; i < NUM_CORES; i++)
+    {
+        arbitor->prioritized_core_ids[i] = i;
+    }
 }

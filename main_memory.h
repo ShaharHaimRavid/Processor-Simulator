@@ -53,8 +53,6 @@ typedef struct
 	bool_t transaction_open;
 	uint16_t flush_count;
 	bus_origid_t transaction_origid;
-
-	arbitor_t *arbitor
 } main_memory_bus_t;
 
 bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_addr_t addr, bus_command_t cmd, block *data, bool_t *shared);

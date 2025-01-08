@@ -7,6 +7,7 @@
 #include "instruction_memory.h"
 #include "main_memory.h"
 #include "core.h"
+#include "arbitor.h"
 
 #define GET_ARG(argc, argv, i, default_val) (argc == 0 ? argv[i] : default_val);
 
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
 	main_memory_load(&main_mem, mem_files.memin);
 
 	main_memory_bus_t main_mem_bus;
-	main_memory_bus_init(&main_mem_bus, mem_files.bustrace, &main_mem, &arbitor);
+	main_memory_bus_init(&main_mem_bus, mem_files.bustrace, &main_mem);
 
 	// Initialize caches and assign them to cores
 	cache_t caches[NUM_CORES];
@@ -128,11 +129,10 @@ int main(int argc, char *argv[])
 	{
 		// we call the core_clk function for each core in the priorized order
 		// to verify the correct core gets the memory access transaction
-		bus_origid_t bus_origid[NUM_CORES];
-		int n = arbitor_prioritize(&arbitor, &bus_origid);
+		int *cored_prioritized = arbitor_prioritize(&arbitor);
 		for (int i = 0; i < NUM_CORES; i++)
 		{
-			core_clk(&cores[i]);
+			core_clk(&cores[cored_prioritized[i]]);
 		}
 	}
 

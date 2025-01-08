@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="arbitor.c" />
     <ClCompile Include="cache.c" />
     <ClCompile Include="common.h" />
     <ClCompile Include="core.c" />
@@ -136,6 +137,7 @@
     <ClCompile Include="ProcessorSim.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="arbitor.h" />
     <ClInclude Include="cache.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="files.h" />

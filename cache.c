@@ -22,7 +22,7 @@ bool_t cache_find(cache_t *c, uint32_t addr, uint8_t *index_of_block)
 			continue;
 
 		found = TRUE;
-		index_of_block = index + i;
+		*index_of_block = index + i;
 	}
 	return found;
 }
@@ -207,6 +207,7 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 
 	c->data[index_of_block][offset] = data;
 	c->metadata[index_of_block] = tag | MESI_MODIFIED << 12;
+	return TRUE;
 }
 
 // Save the data array of the cache to the dsram file

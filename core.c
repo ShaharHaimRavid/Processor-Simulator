@@ -7,6 +7,10 @@
 #define INSTRUCTION_10BIT_MASK 0x3FF
 #define INSTRUCTION_12BIT_MASK 0xFFF
 #define INSTRUCTION_PARSE_BITS(instruction, offset, mask) ((instruction >> offset) & mask)
+bool_t is_halted(core_t* core)
+{
+	return core->halted;
+}
 
 void register_write(uint32_t *regs, uint16_t addr, uint32_t data)
 {
@@ -105,7 +109,7 @@ void core_instruction_fetch(core_t *core)
 	core->decode.instruction = core->fetch.instruction;
 }
 
-int core_is_data_hazard(core_t *core)
+uint32_t core_is_data_hazard(core_t *core)
 {
 	/*
 	SW does not write to any register -> no hazard
@@ -147,7 +151,7 @@ void core_instruction_decode(core_t *core)
 	core->decode.opcode = INSTRUCTION_PARSE_BITS(core->decode.instruction, 24, INSTRUCTION_8BIT_MASK);
 
 	// stall if Read after Write
-	int num_stalls = core_is_data_hazard(core);
+	uint32_t num_stalls = core_is_data_hazard(core);
 	if (num_stalls)
 	{
 
@@ -331,4 +335,13 @@ void core_write_back(core_t *core)
 
 	// write back
 	register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data
+}
+
+void core_clk(core_t* core) {
+	core->cycles_count++;
+	core_write_back(core);
+	core_memory_access(core);
+	core_execute(core);
+	core_instruction_decode(core);
+	core_instruction_fetch(core);
 }
