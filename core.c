@@ -22,10 +22,24 @@ uint32_t register_read(uint32_t *regs, uint16_t addr)
 	return regs[addr];
 }
 
-void registers_save(core_t* core, FILE* regout) {
-	for (int i = 0; i < 16; i++) {
-		fprintf(regout, "%08X\n", core->registers[i]);
+void core_save(core_t *core)
+{
+	for (int i = 0; i < 16; i++)
+	{
+		fprintf(core->files->regout, "%08X\n", core->registers[i]);
 	}
+
+	dsram_save(core->cache, core->files->dsram);
+	tsram_save(core->cache, core->files->tsram);
+
+	fprintf(core->files->stats, "cycles %llu\n", core->cycles_count);
+	fprintf(core->files->stats, "instructions %llu\n", core->instructions_exe_count);
+	fprintf(core->files->stats, "read_hit %llu\n", core->cache->read_hit_count);
+	fprintf(core->files->stats, "write_hit %llu\n", core->cache->write_hit_count);
+	fprintf(core->files->stats, "read_miss %llu\n", core->cache->read_miss_count);
+	fprintf(core->files->stats, "write_miss %llu\n", core->cache->write_miss_count);
+	fprintf(core->files->stats, "decode_stall %llu\n", core->decode_stall_count);
+	fprintf(core->files->stats, "mem_stall %llu\n", core->mem_stall_count);
 }
 
 void core_init(core_t *core, core_files_t *files, cache_t *cache)
@@ -64,14 +78,7 @@ void core_init(core_t *core, core_files_t *files, cache_t *cache)
 
 	// TODO: make sure all values of states are initialized, some were added later
 
-	FILE *instructions_file = fopen(files->imem, "r");
-	if (instructions_file == NULL)
-	{
-		printf("Failed opening file %s\n", files->imem);
-		exit(1);
-	}
-	instruction_memory_load(core->imem, instructions_file);
-	fclose(instructions_file);
+	instruction_memory_load(core->imem, core->files->imem);
 }
 
 void core_free(core_t *core)

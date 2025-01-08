@@ -102,6 +102,11 @@ typedef struct
 
 typedef struct
 {
+	uint64_t cycles_count;
+	uint64_t instructions_exe_count;
+	uint64_t decode_stall_count;
+	uint64_t mem_stall_count;
+
 	core_files_t *files;
 	instruction_memory_t *imem;
 	cache_t *cache;
@@ -117,9 +122,9 @@ typedef struct
 
 void register_write(uint32_t *regs, uint16_t addr, uint32_t data);
 uint32_t register_read(uint32_t *regs, uint16_t addr);
-void registers_save(core_t* core, FILE* regout);
 
-void core_init(core_t* core, core_files_t* files, cache_t* cache);
+void core_init(core_t *core, core_files_t *files, cache_t *cache);
+void core_save(core_t *core);
 void core_free(core_t *core);
 
 void core_instruction_fetch(core_t *core);
