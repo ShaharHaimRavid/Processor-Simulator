@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CACHE_H
+#define CACHE_H
 
 #include "main_memory.h"
 #include "common.h"
@@ -24,6 +25,8 @@ typedef struct
 
 	bus_origid_t id;
 	main_memory_bus_t *bus;
+
+	uint32_t pending_addr;
 } cache_t;
 
 void cache_init(cache_t *c, main_memory_bus_t *bus, int8_t id);
@@ -31,3 +34,5 @@ bool_t cache_read(cache_t *c, uint32_t addr, uint32_t *data);
 bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data);
 void dsram_save(cache_t *c, FILE *dsram);
 void tsram_save(cache_t *c, FILE *tsram);
+
+#endif // CACHE_H

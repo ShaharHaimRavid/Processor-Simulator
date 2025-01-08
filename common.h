@@ -1,3 +1,6 @@
+#ifndef COMMON_H
+#define COMMON_H
+
 typedef unsigned long long int uint64_t;
 typedef unsigned int uint32_t;
 typedef unsigned short uint16_t;
@@ -10,3 +13,5 @@ typedef uint8_t bool_t;
 
 #define TRUE 1
 #define FALSE 0
+
+#endif // COMMON_H

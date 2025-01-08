@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FILES_H
+#define FILES_H
 
 #include <stdio.h>
 #include "common.h"
@@ -36,3 +37,5 @@ typedef struct
 
 bool_t mem_files_open(mem_files_t *mem_files);
 bool_t mem_files_close(mem_files_t *mem_files);
+
+#endif // FILES_H

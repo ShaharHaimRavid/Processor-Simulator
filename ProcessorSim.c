@@ -4,7 +4,6 @@
 
 #include "common.h"
 #include "cache.h"
-#include "registers.h"
 #include "instruction_memory.h"
 #include "main_memory.h"
 #include "core.h"

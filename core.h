@@ -1,9 +1,9 @@
-#pragma once
+#ifndef CORE_H
+#define CORE_H
 
 #include "files.h"
 #include "cache.h"
 #include "instruction_memory.h"
-#include "registers.h"
 #include "main_memory.h"
 #include "common.h"
 
@@ -123,6 +123,8 @@ typedef struct
 void register_write(uint32_t *regs, uint16_t addr, uint32_t data);
 uint32_t register_read(uint32_t *regs, uint16_t addr);
 
+void core_clk(core_t *core);
+
 void core_init(core_t *core, core_files_t *files, cache_t *cache);
 void core_save(core_t *core);
 void core_free(core_t *core);
@@ -132,3 +134,5 @@ void core_instruction_decode(core_t *core);
 void core_execute(core_t *core);
 void core_memory_access(core_t *core);
 void core_write_back(core_t *core);
+
+#endif // CORE_H
