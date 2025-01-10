@@ -46,6 +46,11 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 	uint16_t set = ADDRESS_INDEX(addr);
 	uint16_t offset = ADDRESS_OFFSET(addr);
 
+	uint8_t index_of_block;
+	bool_t found = cache_find(c, addr, &index_of_block);
+
+	*shared |= found; // raise shared bit if found
+
 	if (origid == BUS_ORIGID_MAIN_MEMORY)
 	{
 		if (!(cmd == BUS_COMMAND_FLUSH && c->pending_addr == addr))
@@ -61,16 +66,8 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 		return;
 	}
 
-	uint8_t index_of_block;
-	bool_t found = cache_find(c, addr, &index_of_block);
-
 	if (!found) // not in cache - shouldnt change MESI state
 		return;
-
-	if (cmd == BUS_COMMAND_READ) // found in cache -> set shared to true
-	{
-		*shared |= TRUE;
-	}
 
 	MESI mesi = METADATA_MESI(c->metadata[index_of_block]);
 
@@ -147,9 +144,9 @@ bool_t cache_read(cache_t *c, uint32_t addr, uint32_t *data)
 	}
 
 	// no data in cache (or invalid), need to fetch from memory
-	block block_from_memory;
+	word w;
 	bool_t shared;
-	bool_t ret = main_memory_bus_action(c->bus, addr, BUS_COMMAND_READ, &block_from_memory, &shared);
+	bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READ, &w, &shared);
 	if (ret) // got transaction from round-robin
 		c->pending_addr = addr;
 	return FALSE;
@@ -182,9 +179,9 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 
 	if (!found || mesi == MESI_INVALID || mesi == MESI_SHARED)
 	{
-		block block_from_memory;
+		word w;
 		bool_t shared;
-		bool_t ret = main_memory_bus_action(c->bus, addr, BUS_COMMAND_READX, &block_from_memory, &shared);
+		bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READX, &w, &shared);
 		if (!ret)
 		{
 			return FALSE;

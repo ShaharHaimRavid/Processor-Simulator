@@ -1,11 +1,5 @@
 #include "main_memory.h"
 
-bool_t main_memory_bus_action_main_mem(bus_addr_t addr, bus_command_t cmd, block *data, bool_t *shared, void *user_data)
-{
-    main_memory_bus_t *mem = (main_memory_bus_t *)user_data;
-    return main_memory_bus_action(mem, addr, cmd, data, shared);
-}
-
 void main_memory_write(main_memory_t *mem, bus_addr_t addr, block data)
 {
     // Copy the data from the block to the memory
@@ -29,13 +23,12 @@ void main_memory_bus_snoop_observe(main_memory_bus_t *bus, bus_origid_t id, bus_
     bus->observers_data[id] = user_data;
 }
 
-void main_memory_bus_init(main_memory_bus_t* bus, FILE* bustrace, main_memory_t* mem)
+void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem)
 {
     bus->bustrace_file = bustrace;
     bus->memory = *mem;
     mem->bus_data = bus;
-    mem->bus_action = main_memory_bus_action_main_mem;
-    //bus->arbitor = arbitor;
+    // bus->arbitor = arbitor;
 }
 
 void main_memory_init(main_memory_t *mem)
@@ -90,5 +83,66 @@ void main_memory_save(main_memory_t *mem, FILE *memout)
     }
 }
 
-bool_t main_memory_bus_action(main_memory_bus_t*bus, bus_addr_t addr, bus_command_t cmd, block *data, bool_t *shared) { return TRUE; }
-bool_t main_memory_bus_write(main_memory_bus_t*bus, bus_addr_t addr, block data) { return TRUE; }
+bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word *data, bool_t *shared)
+{
+    if (bus->transaction_open)
+    {
+        return FALSE;
+    }
+
+    // Notify the observers
+    for (int i = 0; i < 4; i++)
+    {
+        if (bus->observers[i] != NULL)
+        {
+            bus->observers[i](id, cmd, addr, 0, shared, bus->observers_data[i]);
+        }
+    }
+
+    if (id == BUS_ORIGID_MAIN_MEMORY)
+    {
+        return TRUE;
+    }
+    if (cmd != BUS_COMMAND_READ && cmd != BUS_COMMAND_READX)
+    {
+        return FALSE;
+    }
+
+    bus->transaction_open = TRUE;
+    bus->transaction_origid = id;
+    bus->flush_count = 0;
+
+    // set main memory to return data
+    bus->memory.latency_cycles = 16;
+    bus->memory.pending_addr = addr & 0xFFFFFFFC; // set lower 2 bit to zero to get the block address at first word
+    bus->memory.transaction_pending = TRUE;
+}
+
+bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data)
+{
+    main_memory_write(&bus->memory, addr, data);
+    return TRUE;
+}
+
+void main_memory_clk(main_memory_t* mem)
+{
+    if (!mem->transaction_pending)
+    {
+        return;
+    }
+
+    if (mem->latency_cycles > 0)
+    {
+        mem->latency_cycles--;
+        return;
+    }
+    bool_t shared;
+    main_memory_bus_t *bus = (main_memory_bus_t *)mem->bus_data;
+    main_memory_bus_action(bus, BUS_ORIGID_MAIN_MEMORY, mem->pending_addr, BUS_COMMAND_FLUSH, mem->data[mem->pending_addr], &shared);
+
+    mem->pending_addr++;            // increment to next word
+    if (mem->pending_addr % 4 == 0) // last word of block
+    {
+        mem->transaction_pending = FALSE;
+    }
+}

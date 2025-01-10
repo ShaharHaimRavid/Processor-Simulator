@@ -33,13 +33,16 @@ typedef enum
 typedef uint32_t bus_addr_t;
 
 typedef void(bus_snoop_cb_t)(bus_origid_t, bus_command_t, bus_addr_t, uint32_t, bool_t *, void *);
-typedef bool_t(bus_action_cb_t)(bus_addr_t, bus_command_t, block *, bool_t *, void *);
 
 typedef struct
 {
 	word *data;
-	bus_action_cb_t *bus_action;
 	void *bus_data;
+
+	// data to keep track of transactions from bus
+	uint16_t latency_cycles;
+	bus_addr_t pending_addr;
+	bool_t transaction_pending;
 } main_memory_t;
 
 typedef struct
@@ -55,7 +58,7 @@ typedef struct
 	bus_origid_t transaction_origid;
 } main_memory_bus_t;
 
-bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_addr_t addr, bus_command_t cmd, block *data, bool_t *shared);
+bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word *data, bool_t *shared);
 bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data);
 
 void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem);
@@ -65,5 +68,7 @@ void main_memory_load(main_memory_t *mem, FILE *memin); // load data from file
 void main_memory_save(main_memory_t *mem, FILE *memin); // save data to file
 
 void main_memory_bus_snoop_observe(main_memory_bus_t *bus, bus_origid_t id, bus_snoop_cb_t cb, void *user_data);
+
+void main_memory_clk(main_memory_t *mem);
 
 #endif // MAIN_MEMORY_H
