@@ -7,7 +7,7 @@
 #define INSTRUCTION_10BIT_MASK 0x3FF
 #define INSTRUCTION_12BIT_MASK 0xFFF
 #define INSTRUCTION_PARSE_BITS(instruction, offset, mask) ((instruction >> offset) & mask)
-bool_t is_halted(core_t* core)
+bool_t is_halted(core_t *core)
 {
 	return core->halted;
 }
@@ -50,14 +50,22 @@ void core_init(core_t *core, core_files_t *files, cache_t *cache)
 {
 	core->files = files;
 	core->cache = cache;
+	core->imem = (instruction_memory_t *)malloc(sizeof(instruction_memory_t));
 	core->halted = FALSE;
 	for (int i = 0; i < 16; i++)
 		core->registers[i] = 0;
 
+	core->cycles_count = 0;
+	core->instructions_exe_count = 0;
+	core->decode_stall_count = 0;
+	core->mem_stall_count = 0;
+
 	core->fetch.pc = 0;
 	core->fetch.instruction = 0;
+	core->fetch.stalls = 0;
 	core->decode.pc = 0;
 	core->decode.instruction = 0;
+	core->decode.stalls = 0;
 	core->decode.opcode = 0;
 	core->decode.rs = 0;
 	core->decode.rt = 0;
@@ -66,22 +74,28 @@ void core_init(core_t *core, core_files_t *files, cache_t *cache)
 	core->execute.pc = 0;
 	core->execute.instruction = 0;
 	core->execute.opcode = 0;
-	core->execute.rsv = 0;
 	core->execute.rtv = 0;
+	core->execute.rsv = 0;
 	core->execute.rd = 0;
+	core->execute.rdv = 0;
 	core->execute.imm = 0;
 	core->execute.alu_result = 0;
+	core->execute.do_work = 0;
 	core->memory_access.pc = 0;
 	core->memory_access.instruction = 0;
+	core->memory_access.opcode = 0;
+	core->memory_access.state = MEM_ACCESS_NONE;
 	core->memory_access.rtv = 0;
 	core->memory_access.rd = 0;
+	core->memory_access.rdv = 0;
 	core->memory_access.alu_result = 0;
+	core->memory_access.do_work = 0;
+	core->memory_access.action_success = 0;
 	core->write_back.pc = 0;
 	core->write_back.instruction = 0;
 	core->write_back.rd = 0;
 	core->write_back.mem_data = 0;
-
-	// TODO: make sure all values of states are initialized, some were added later
+	core->write_back.do_work = 0;
 
 	instruction_memory_load(core->imem, core->files->imem);
 }
@@ -337,7 +351,8 @@ void core_write_back(core_t *core)
 	register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data
 }
 
-void core_clk(core_t* core) {
+void core_clk(core_t *core)
+{
 	core->cycles_count++;
 	core_write_back(core);
 	core_memory_access(core);
