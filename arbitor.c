@@ -28,8 +28,9 @@ int *arbitor_prioritize(arbitor_t *arbitor)
 {
     return arbitor->prioritized_core_ids;
 }
-void arbitor_init(arbitor_t* arbitor)
+void arbitor_init(arbitor_t *arbitor)
 {
+    arbitor->transaction_core_id = 0;
     arbitor->is_transaction_open = FALSE;
     for (int i = 0; i < NUM_CORES; i++)
     {

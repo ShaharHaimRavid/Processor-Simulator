@@ -109,6 +109,10 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 
 void cache_init(cache_t *c, main_memory_bus_t *bus, int8_t id)
 {
+	c->read_hit_count = 0;
+	c->read_miss_count = 0;
+	c->write_hit_count = 0;
+	c->write_miss_count = 0;
 	for (int i = 0; i < 64; i++)
 	{
 		c->metadata[i] = 0;

@@ -28,12 +28,17 @@ void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t 
     bus->bustrace_file = bustrace;
     bus->memory = *mem;
     mem->bus_data = bus;
-    // bus->arbitor = arbitor;
+    bus->transaction_open = FALSE;
+    bus->flush_count = 0;
+    bus->transaction_origid = BUS_ORIGID_MAIN_MEMORY;
 }
 
 void main_memory_init(main_memory_t *mem)
 {
     mem->data = (uint32_t *)calloc(1 << 20, sizeof(uint32_t));
+    mem->latency_cycles = 0;
+    mem->pending_addr = 0;
+    mem->transaction_pending = FALSE;
 }
 
 void main_memory_free(main_memory_t *mem)
@@ -124,7 +129,7 @@ bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data
     return TRUE;
 }
 
-void main_memory_clk(main_memory_t* mem)
+void main_memory_clk(main_memory_t *mem)
 {
     if (!mem->transaction_pending)
     {
