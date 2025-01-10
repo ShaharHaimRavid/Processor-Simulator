@@ -23,7 +23,7 @@ void main_memory_bus_snoop_observe(main_memory_bus_t *bus, bus_origid_t id, bus_
     bus->observers_data[id] = user_data;
 }
 
-void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem)
+void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem, core_arbitor_t *arbitor)
 {
     bus->bustrace_file = bustrace;
     bus->memory = *mem;
@@ -31,14 +31,17 @@ void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t 
     bus->transaction_open = FALSE;
     bus->flush_count = 0;
     bus->transaction_origid = BUS_ORIGID_MAIN_MEMORY;
+    bus->arbitor = arbitor;
 }
 
-void main_memory_init(main_memory_t *mem)
+void main_memory_init(main_memory_t *mem, core_arbitor_t *arbitor)
 {
     mem->data = (uint32_t *)calloc(1 << 20, sizeof(uint32_t));
     mem->latency_cycles = 0;
     mem->pending_addr = 0;
     mem->transaction_pending = FALSE;
+    mem->bus_data = NULL;
+    mem->arbitor = arbitor;
 }
 
 void main_memory_free(main_memory_t *mem)
@@ -121,6 +124,9 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
     bus->memory.latency_cycles = 16;
     bus->memory.pending_addr = addr & 0xFFFFFFFC; // set lower 2 bit to zero to get the block address at first word
     bus->memory.transaction_pending = TRUE;
+
+    arbitor_on_transaction_start(bus->arbitor, id);
+    return FALSE;
 }
 
 bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data)
@@ -149,5 +155,6 @@ void main_memory_clk(main_memory_t *mem)
     if (mem->pending_addr % 4 == 0) // last word of block
     {
         mem->transaction_pending = FALSE;
+        arbitor_on_transaction_end(bus->arbitor);
     }
 }

@@ -43,6 +43,7 @@ typedef struct
 	uint16_t latency_cycles;
 	bus_addr_t pending_addr;
 	bool_t transaction_pending;
+	core_arbitor_t *arbitor;
 } main_memory_t;
 
 typedef struct
@@ -56,13 +57,14 @@ typedef struct
 	bool_t transaction_open;
 	uint16_t flush_count;
 	bus_origid_t transaction_origid;
+	core_arbitor_t *arbitor;
 } main_memory_bus_t;
 
 bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word *data, bool_t *shared);
 bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data);
 
-void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem);
-void main_memory_init(main_memory_t *mem);				// initialize memory to 0
+void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem, core_arbitor_t *arbitor);
+void main_memory_init(main_memory_t *mem, core_arbitor_t *arbitor);
 void main_memory_free(main_memory_t *mem);				// free memory
 void main_memory_load(main_memory_t *mem, FILE *memin); // load data from file
 void main_memory_save(main_memory_t *mem, FILE *memin); // save data to file
