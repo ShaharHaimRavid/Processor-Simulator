@@ -13,33 +13,33 @@
 
 static void parse_args(int argc, char *argv[], core_files_t *core_files, mem_files_t *mem_files)
 {
-	core_files[0].imem_path = GET_ARG(argc, argv, 1, "example_files\\imem0.txt");
-	core_files[1].imem_path = GET_ARG(argc, argv, 2, "example_files\\imem1.txt");
-	core_files[2].imem_path = GET_ARG(argc, argv, 3, "example_files\\imem2.txt");
-	core_files[3].imem_path = GET_ARG(argc, argv, 4, "example_files\\imem3.txt");
-	mem_files->memin_path = GET_ARG(argc, argv, 5, "example_files\\memin.txt");
-	mem_files->memout_path = GET_ARG(argc, argv, 6, "example_files\\memout.txt");
-	core_files[0].regout_path = GET_ARG(argc, argv, 7, "example_files\\regout0.txt");
-	core_files[1].regout_path = GET_ARG(argc, argv, 8, "example_files\\regout1.txt");
-	core_files[2].regout_path = GET_ARG(argc, argv, 9, "example_files\\regout2.txt");
-	core_files[3].regout_path = GET_ARG(argc, argv, 10, "example_files\\regout3.txt");
-	core_files[0].coretrace_path = GET_ARG(argc, argv, 11, "example_files\\core0trace.txt");
-	core_files[1].coretrace_path = GET_ARG(argc, argv, 12, "example_files\\core1trace.txt");
-	core_files[2].coretrace_path = GET_ARG(argc, argv, 13, "example_files\\core2trace.txt");
-	core_files[3].coretrace_path = GET_ARG(argc, argv, 14, "example_files\\core3trace.txt");
-	mem_files->bustrace_path = GET_ARG(argc, argv, 15, "example_files\\bustrace.txt");
-	core_files[0].dsram_path = GET_ARG(argc, argv, 16, "example_files\\dsram0.txt");
-	core_files[1].dsram_path = GET_ARG(argc, argv, 17, "example_files\\dsram1.txt");
-	core_files[2].dsram_path = GET_ARG(argc, argv, 18, "example_files\\dsram2.txt");
-	core_files[3].dsram_path = GET_ARG(argc, argv, 19, "example_files\\dsram3.txt");
-	core_files[0].tsram_path = GET_ARG(argc, argv, 20, "example_files\\tsram0.txt");
-	core_files[1].tsram_path = GET_ARG(argc, argv, 21, "example_files\\tsram1.txt");
-	core_files[2].tsram_path = GET_ARG(argc, argv, 22, "example_files\\tsram2.txt");
-	core_files[3].tsram_path = GET_ARG(argc, argv, 23, "example_files\\tsram3.txt");
-	core_files[0].stats_path = GET_ARG(argc, argv, 24, "example_files\\stats0.txt");
-	core_files[1].stats_path = GET_ARG(argc, argv, 25, "example_files\\stats1.txt");
-	core_files[2].stats_path = GET_ARG(argc, argv, 26, "example_files\\stats2.txt");
-	core_files[3].stats_path = GET_ARG(argc, argv, 27, "example_files\\stats3.txt");
+	core_files[0].imem_path = GET_ARG(argc, argv, 1, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\imem0.txt");
+	core_files[1].imem_path = GET_ARG(argc, argv, 2, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\imem1.txt");
+	core_files[2].imem_path = GET_ARG(argc, argv, 3, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\imem2.txt");
+	core_files[3].imem_path = GET_ARG(argc, argv, 4, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\imem3.txt");
+	mem_files->memin_path = GET_ARG(argc, argv, 5, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\memin.txt");
+	mem_files->memout_path = GET_ARG(argc, argv, 6, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\memout.txt");
+	core_files[0].regout_path = GET_ARG(argc, argv, 7, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\regout0.txt");
+	core_files[1].regout_path = GET_ARG(argc, argv, 8, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\regout1.txt");
+	core_files[2].regout_path = GET_ARG(argc, argv, 9, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\regout2.txt");
+	core_files[3].regout_path = GET_ARG(argc, argv, 10, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\regout3.txt");
+	core_files[0].coretrace_path = GET_ARG(argc, argv, 11, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\core0trace.txt");
+	core_files[1].coretrace_path = GET_ARG(argc, argv, 12, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\core1trace.txt");
+	core_files[2].coretrace_path = GET_ARG(argc, argv, 13, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\core2trace.txt");
+	core_files[3].coretrace_path = GET_ARG(argc, argv, 14, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\core3trace.txt");
+	mem_files->bustrace_path = GET_ARG(argc, argv, 15, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\bustrace.txt");
+	core_files[0].dsram_path = GET_ARG(argc, argv, 16, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\dsram0.txt");
+	core_files[1].dsram_path = GET_ARG(argc, argv, 17, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\dsram1.txt");
+	core_files[2].dsram_path = GET_ARG(argc, argv, 18, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\dsram2.txt");
+	core_files[3].dsram_path = GET_ARG(argc, argv, 19, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\dsram3.txt");
+	core_files[0].tsram_path = GET_ARG(argc, argv, 20, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\tsram0.txt");
+	core_files[1].tsram_path = GET_ARG(argc, argv, 21, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\tsram1.txt");
+	core_files[2].tsram_path = GET_ARG(argc, argv, 22, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\tsram2.txt");
+	core_files[3].tsram_path = GET_ARG(argc, argv, 23, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\tsram3.txt");
+	core_files[0].stats_path = GET_ARG(argc, argv, 24, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\stats0.txt");
+	core_files[1].stats_path = GET_ARG(argc, argv, 25, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\stats1.txt");
+	core_files[2].stats_path = GET_ARG(argc, argv, 26, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\stats2.txt");
+	core_files[3].stats_path = GET_ARG(argc, argv, 27, "C:\\Users\\iddob\\Desktop\\University\\year5\\Architecture\\Project\\ProcessorSim\\example_files\\stats3.txt");
 }
 
 int main(int argc, char *argv[])
@@ -97,16 +97,17 @@ int main(int argc, char *argv[])
 	// ========================================================
 	//	Initialize datastructures
 	// ========================================================
-	arbitor_t arbitor;
+	printf("init step\n");
+	core_arbitor_t arbitor;
 	arbitor_init(&arbitor);
 
 	// Initialize main memory structure (File -> Struct)
 	main_memory_t main_mem;
-	main_memory_init(&main_mem);
+	main_memory_init(&main_mem, &arbitor);
 	main_memory_load(&main_mem, mem_files.memin);
 
 	main_memory_bus_t main_mem_bus;
-	main_memory_bus_init(&main_mem_bus, mem_files.bustrace, &main_mem);
+	main_memory_bus_init(&main_mem_bus, mem_files.bustrace, &main_mem, &arbitor);
 
 	// Initialize caches and assign them to cores
 	cache_t caches[NUM_CORES];
@@ -114,17 +115,16 @@ int main(int argc, char *argv[])
 	{
 		cache_init(&caches[i], &main_mem_bus, i);
 	}
-
 	// Initialize cores and their registers
 	core_t cores[NUM_CORES];
 	for (int i = 0; i < NUM_CORES; i++)
 	{
-		core_init(&cores[i], &core_files[i], &caches[i]);
+		core_init(&cores[i], &core_files[i], &caches[i], i);
 	}
-
 	// ========================================================
 	//	Simulation
 	// ========================================================
+	printf("simulation step\n");
 	while (!is_halted(&cores[0]) || !is_halted(&cores[1]) || !is_halted(&cores[2]) || !is_halted(&cores[3]))
 	{
 		// we call the core_clk function for each core in the priorized order
@@ -135,10 +135,10 @@ int main(int argc, char *argv[])
 			core_clk(&cores[cored_prioritized[i]]);
 		}
 	}
-
 	// ========================================================
 	//	Save data to output files
 	// ========================================================
+	printf("save step\n");
 	for (int i = 0; i < NUM_CORES; i++)
 	{
 		core_save(&cores[i]);
@@ -148,5 +148,6 @@ int main(int argc, char *argv[])
 	main_memory_save(&main_mem, mem_files.memout);
 	main_memory_free(&main_mem);
 	mem_files_close(&mem_files);
+	printf("finished successfully\n");
 	return 0;
 }

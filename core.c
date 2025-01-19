@@ -8,7 +8,7 @@
 #define INSTRUCTION_12BIT_MASK 0xFFF
 #define INSTRUCTION_PARSE_BITS(instruction, offset, mask) ((instruction >> offset) & mask)
 bool_t is_halted(core_t *core)
-{
+{	
 	return core->halted;
 }
 
@@ -46,8 +46,9 @@ void core_save(core_t *core)
 	fprintf(core->files->stats, "mem_stall %llu\n", core->mem_stall_count);
 }
 
-void core_init(core_t *core, core_files_t *files, cache_t *cache)
+void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_id)
 {
+	core->id = core_id;
 	core->files = files;
 	core->cache = cache;
 	core->imem = (instruction_memory_t *)malloc(sizeof(instruction_memory_t));
@@ -115,10 +116,8 @@ void core_instruction_fetch(core_t *core)
 		core->fetch.stalls--;
 		return;
 	}
-
 	core->fetch.instruction = instruction_memory_read(core->imem, core->fetch.pc);
 	core->fetch.pc++;
-
 	core->decode.pc = core->fetch.pc;
 	core->decode.instruction = core->fetch.instruction;
 }
@@ -232,8 +231,12 @@ void core_execute(core_t *core)
 {
 	if (core->halted)
 		return;
-	if (!core->execute.do_work)
+	if (!core->execute.do_work) {
 		return;
+	}
+
+	printf("core #%d. instruction %08x\n", core->id, core->execute.instruction);
+	printf("core #%d. opcode at EXE step: %d\n", core->id, core->execute.opcode);
 
 	// execute instruction
 	switch (core->execute.opcode)
@@ -289,6 +292,7 @@ void core_execute(core_t *core)
 		core->halted = TRUE;
 		core->memory_access.do_work = 0;
 		core->write_back.do_work = 0;
+		printf("SHOULD HALT HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 		break;
 	}
 
@@ -358,5 +362,7 @@ void core_clk(core_t *core)
 	core_memory_access(core);
 	core_execute(core);
 	core_instruction_decode(core);
+	//printf("after decode\n");
 	core_instruction_fetch(core);
+	//printf("after fetch\n");
 }

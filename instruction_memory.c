@@ -4,6 +4,8 @@
 
 uint32_t instruction_memory_read(instruction_memory_t *imem, uint32_t addr)
 {
+    //printf("address %d\n", addr);
+    //printf("instruction % 08x\n", imem->instructions[addr]);
     return imem->instructions[addr];
 }
 
@@ -11,6 +13,7 @@ void instruction_memory_load(instruction_memory_t *mem, FILE *imem)
 {
     char line[9]; // To store a line of 8 hex digits plus the null terminator
     int i = 0;
+    uint32_t test;
 
     // Initialize the instructions array to 0
     for (i = 0; i < 1024; i++)
@@ -24,6 +27,14 @@ void instruction_memory_load(instruction_memory_t *mem, FILE *imem)
     // Read lines from the file and populate the instructions array
     while (i < 1024 && fgets(line, sizeof(line), imem))
     {
+        // Strip any unwanted character
+        line[strcspn(line, "\r\n")] = '\0';
+
+        // Skip empty lines
+        if (line[0] == '\0')
+        {
+            continue;
+        }
         mem->instructions[i] = (uint32_t)strtol(line, NULL, 16);
         i++;
     }

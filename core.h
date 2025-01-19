@@ -102,6 +102,8 @@ typedef struct
 
 typedef struct
 {
+	uint8_t id;
+
 	uint64_t cycles_count;
 	uint64_t instructions_exe_count;
 	uint64_t decode_stall_count;
@@ -128,7 +130,7 @@ uint32_t register_read(uint32_t *regs, uint16_t addr);
 void core_clk(core_t *core);
 bool_t is_halted(core_t* core);
 
-void core_init(core_t *core, core_files_t *files, cache_t *cache);
+void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_id);
 void core_save(core_t *core);
 void core_free(core_t *core);
 
