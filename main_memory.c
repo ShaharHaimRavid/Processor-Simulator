@@ -46,7 +46,7 @@ void main_memory_init(main_memory_t *mem, core_arbitor_t *arbitor)
 
 void main_memory_free(main_memory_t *mem)
 {
-    free(mem);
+    free(mem->data);
 }
 
 void main_memory_load(main_memory_t *mem, FILE *memin)

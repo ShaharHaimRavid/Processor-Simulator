@@ -28,7 +28,8 @@ uint32_t register_read(uint32_t *regs, uint16_t addr)
 
 void core_save(core_t *core)
 {
-	for (int i = 0; i < 16; i++)
+	printf("core save %d \n", core->id);
+	for (int i = 2; i < 16; i++)
 	{
 		fprintf(core->files->regout, "%08X\n", core->registers[i]);
 	}
@@ -64,6 +65,8 @@ void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_i
 	core->fetch.pc = 0;
 	core->fetch.instruction = 0;
 	core->fetch.stalls = 0;
+	core->fetch.delay_slot = 0;
+	core->fetch.delay_slot_instruction = 0;
 	core->decode.pc = 0;
 	core->decode.instruction = 0;
 	core->decode.stalls = 0;
@@ -91,7 +94,7 @@ void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_i
 	core->memory_access.rdv = 0;
 	core->memory_access.alu_result = 0;
 	core->memory_access.do_work = 0;
-	core->memory_access.action_success = 0;
+	core->memory_access.action_success = 1;
 	core->write_back.pc = 0;
 	core->write_back.instruction = 0;
 	core->write_back.rd = 0;
@@ -104,11 +107,12 @@ void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_i
 void core_free(core_t *core)
 {
 	free(core->imem);
-	free(core->cache);
 }
 
 void core_instruction_fetch(core_t *core)
 {
+	printf("core #%d. FETCH step \n", core->id);
+
 	if (core->halted)
 		return;
 	if (core->fetch.stalls)
@@ -117,8 +121,17 @@ void core_instruction_fetch(core_t *core)
 		return;
 	}
 	core->fetch.instruction = instruction_memory_read(core->imem, core->fetch.pc);
-	core->fetch.pc++;
-	core->decode.pc = core->fetch.pc;
+	
+	if (core->fetch.delay_slot) {
+		core->decode.pc = core->fetch.pc;
+		core->fetch.pc = core->fetch.delay_slot_instruction;
+		core->fetch.delay_slot = 0;
+	}
+	else{
+		core->decode.pc = core->fetch.pc;
+		core->fetch.pc++;
+	}
+	
 	core->decode.instruction = core->fetch.instruction;
 }
 
@@ -148,26 +161,26 @@ uint32_t core_is_data_hazard(core_t *core)
 
 void core_instruction_decode(core_t *core)
 {
-	if (core->halted)
+	printf("core #%d. DECODE step instruction %08x\n", core->id, core->decode.instruction);
+	if (core->halted) {
 		return;
+	}
 	if (core->decode.stalls)
 	{
 		core->decode.stalls--;
 		return;
 	}
-
+	
 	// decode instruction
 	core->decode.imm = INSTRUCTION_PARSE_BITS(core->decode.instruction, 0, INSTRUCTION_12BIT_MASK);
 	core->decode.rt = INSTRUCTION_PARSE_BITS(core->decode.instruction, 12, INSTRUCTION_4BIT_MASK);
 	core->decode.rs = INSTRUCTION_PARSE_BITS(core->decode.instruction, 16, INSTRUCTION_4BIT_MASK);
 	core->decode.rd = INSTRUCTION_PARSE_BITS(core->decode.instruction, 20, INSTRUCTION_4BIT_MASK);
 	core->decode.opcode = INSTRUCTION_PARSE_BITS(core->decode.instruction, 24, INSTRUCTION_8BIT_MASK);
-
 	// stall if Read after Write
 	uint32_t num_stalls = core_is_data_hazard(core);
 	if (num_stalls)
 	{
-
 		core->fetch.stalls = max(num_stalls, core->fetch.stalls);
 		core->decode.stalls = max(num_stalls, core->decode.stalls);
 		core->execute.do_work = 0;
@@ -196,35 +209,58 @@ void core_instruction_decode(core_t *core)
 
 	if (core->decode.opcode < 9 || core->decode.opcode > 15)
 		return;
-
 	switch (core->decode.opcode)
-	{
-		switch (core->decode.opcode)
 		{
 		case OPCODE_BEQ:
-			if (rtv == rsv)
-				core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			if (rtv == rsv) {
+				core->fetch.delay_slot = 1;
+				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			}
+			break;
 		case OPCODE_BNE:
-			if (rtv != rsv)
-				core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			if (rtv != rsv) {
+				core->fetch.delay_slot = 1;
+				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			}
+			break;
 		case OPCODE_BLT:
-			if (rsv < rtv)
-				core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			if (rsv < rtv) {
+				printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!rtv rsv %d %d\n", rtv, rsv);
+				core->fetch.delay_slot = 1;
+				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			}
+			break;
 		case OPCODE_BGT:
-			if (rsv > rtv)
-				core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			if (rsv > rtv) {
+				core->fetch.delay_slot = 1;
+				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			}
+			break;
 		case OPCODE_BLE:
-			if (rsv <= rtv)
-				core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			if (rsv <= rtv) {
+				core->fetch.delay_slot = 1;
+				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			}
+			break;
 		case OPCODE_BGE:
-			if (rsv >= rtv)
-				core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			if (rsv >= rtv) {
+				core->fetch.delay_slot = 1;
+				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			}
 			break;
 		case OPCODE_JAL:
-			core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+			core->fetch.delay_slot = 1;
+			core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+			//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
 			break;
 		}
-	}
+	
 }
 
 void core_execute(core_t *core)
@@ -236,7 +272,6 @@ void core_execute(core_t *core)
 	}
 
 	printf("core #%d. instruction %08x\n", core->id, core->execute.instruction);
-	printf("core #%d. opcode at EXE step: %d\n", core->id, core->execute.opcode);
 
 	// execute instruction
 	switch (core->execute.opcode)
@@ -290,15 +325,16 @@ void core_execute(core_t *core)
 		break;
 	case OPCODE_HALT:
 		core->halted = TRUE;
-		core->memory_access.do_work = 0;
-		core->write_back.do_work = 0;
+		//core->memory_access.empty = 1;
+		//core->memory_access.do_work = 0;
+		//core->write_back.do_work = 0;
 		printf("SHOULD HALT HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 		break;
 	}
 
-	if (!core->memory_access.action_success)
+	if (!core->memory_access.action_success) {
 		return;
-
+	}
 	core->memory_access.pc = core->execute.pc;
 	core->memory_access.opcode = core->execute.opcode;
 	core->memory_access.instruction = core->execute.instruction;
@@ -306,14 +342,19 @@ void core_execute(core_t *core)
 	core->memory_access.rd = core->execute.rd;
 	core->memory_access.rdv = core->execute.rdv;
 	core->memory_access.state = MEM_ACCESS_NONE;
+	//if (!core->halted) {
+		//core->memory_access.do_work = 1;
+	//}
 	core->memory_access.do_work = 1;
 	core->memory_access.alu_result = core->execute.alu_result;
 }
 
 void core_memory_access(core_t *core)
 {
-	if (!core->memory_access.do_work)
+	if (!core->memory_access.do_work) {
 		return;
+	}
+	printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
 
 	// memory access
 	core->write_back.pc = core->memory_access.pc;
@@ -348,11 +389,15 @@ void core_memory_access(core_t *core)
 
 void core_write_back(core_t *core)
 {
-	if (!core->write_back.do_work)
+	printf("core #%d. WB step instruction %08x\n", core->id, core->write_back.instruction);
+
+	if (!core->write_back.do_work) {
 		return;
+	}
 
 	// write back
 	register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data
+	printf("rd %d, val: %d\n", core->write_back.rd, core->write_back.mem_data);
 }
 
 void core_clk(core_t *core)
@@ -362,7 +407,5 @@ void core_clk(core_t *core)
 	core_memory_access(core);
 	core_execute(core);
 	core_instruction_decode(core);
-	//printf("after decode\n");
 	core_instruction_fetch(core);
-	//printf("after fetch\n");
 }

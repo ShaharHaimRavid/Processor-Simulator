@@ -38,4 +38,7 @@ void instruction_memory_load(instruction_memory_t *mem, FILE *imem)
         mem->instructions[i] = (uint32_t)strtol(line, NULL, 16);
         i++;
     }
+    //for (int j = 0; j < 1024; j++) {
+        //printf("% 08x\n",mem->instructions[j]);
+    //}
 }

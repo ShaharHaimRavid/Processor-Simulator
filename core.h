@@ -34,8 +34,9 @@ typedef struct
 {
 	uint16_t pc;
 	uint32_t instruction;
-
 	uint32_t stalls;
+	bool_t delay_slot;
+	uint32_t delay_slot_instruction;
 } instruction_fetch_state;
 
 typedef struct
@@ -81,7 +82,6 @@ typedef struct
 	bool_t action_success;
 	uint16_t pc;
 	uint32_t instruction;
-
 	OPCODES opcode;
 	MEM_ACCESS_STATE state;
 	uint32_t rtv;
