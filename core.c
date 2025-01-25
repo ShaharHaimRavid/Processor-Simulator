@@ -227,7 +227,6 @@ void core_instruction_decode(core_t *core)
 			break;
 		case OPCODE_BLT:
 			if (rsv < rtv) {
-				printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!rtv rsv %d %d\n", rtv, rsv);
 				core->fetch.delay_slot = 1;
 				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
 				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
@@ -350,7 +349,7 @@ void core_memory_access(core_t *core)
 	if (!core->memory_access.do_work) {
 		return;
 	}
-	printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
+	printf("core #%d. MEMORY step instruction %08x, state %d\n", core->id, core->memory_access.instruction, core->memory_access.state);
 
 	// memory access
 	core->write_back.pc = core->memory_access.pc;
@@ -375,9 +374,10 @@ void core_memory_access(core_t *core)
 	if (!core->memory_access.action_success)
 	{
 		// stall the pipeline
+		printf("core #%d. MEMORY step stall\n", core->id);
 		core->fetch.stalls = max(1, core->fetch.stalls);
 		core->decode.stalls = max(1, core->decode.stalls);
-		core->execute.do_work = 1;
+		core->execute.do_work = 0;
 		core->memory_access.do_work = 1;
 		core->write_back.do_work = 0;
 	}
@@ -393,7 +393,6 @@ void core_write_back(core_t *core)
 
 	// write back
 	register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data
-	printf("rd %d, val: %d\n", core->write_back.rd, core->write_back.mem_data);
 }
 
 void core_clk(core_t *core)
