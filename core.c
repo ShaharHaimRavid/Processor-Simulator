@@ -271,6 +271,15 @@ void core_execute(core_t *core)
 		return;
 	}
 
+	core->memory_access.pc = core->execute.pc;
+	core->memory_access.opcode = core->execute.opcode;
+	core->memory_access.instruction = core->execute.instruction;
+	core->memory_access.rtv = core->execute.rtv;
+	core->memory_access.rd = core->execute.rd;
+	core->memory_access.rdv = core->execute.rdv;
+	core->memory_access.state = MEM_ACCESS_NONE;
+	core->memory_access.alu_result = core->execute.alu_result;
+
 	printf("core #%d. instruction %08x\n", core->id, core->execute.instruction);
 
 	// execute instruction
@@ -325,28 +334,15 @@ void core_execute(core_t *core)
 		break;
 	case OPCODE_HALT:
 		core->halted = TRUE;
-		//core->memory_access.empty = 1;
-		//core->memory_access.do_work = 0;
-		//core->write_back.do_work = 0;
+		core->memory_access.do_work = 0;
+		core->write_back.do_work = 0;
 		printf("SHOULD HALT HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 		break;
 	}
 
-	if (!core->memory_access.action_success) {
-		return;
+	if (!core->halted) {
+		core->memory_access.do_work = 1;
 	}
-	core->memory_access.pc = core->execute.pc;
-	core->memory_access.opcode = core->execute.opcode;
-	core->memory_access.instruction = core->execute.instruction;
-	core->memory_access.rtv = core->execute.rtv;
-	core->memory_access.rd = core->execute.rd;
-	core->memory_access.rdv = core->execute.rdv;
-	core->memory_access.state = MEM_ACCESS_NONE;
-	//if (!core->halted) {
-		//core->memory_access.do_work = 1;
-	//}
-	core->memory_access.do_work = 1;
-	core->memory_access.alu_result = core->execute.alu_result;
 }
 
 void core_memory_access(core_t *core)
