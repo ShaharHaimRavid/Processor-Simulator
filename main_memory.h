@@ -10,6 +10,8 @@
 #include <pthread.h>
 #endif
 
+#define BLOCK_ADDR_FROM_BYTE(addr) (addr & 0xFFFFFFFC)
+
 typedef uint32_t word;
 typedef word block[4];
 
@@ -51,7 +53,7 @@ typedef struct
 	bus_snoop_cb_t *observers[4];
 	void *observers_data[4];
 
-	main_memory_t memory;
+	main_memory_t *memory;
 	FILE *bustrace_file;
 
 	bool_t transaction_open;

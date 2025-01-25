@@ -26,7 +26,7 @@ void main_memory_bus_snoop_observe(main_memory_bus_t *bus, bus_origid_t id, bus_
 void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem, core_arbitor_t *arbitor)
 {
     bus->bustrace_file = bustrace;
-    bus->memory = *mem;
+    bus->memory = mem;
     mem->bus_data = bus;
     bus->transaction_open = FALSE;
     bus->flush_count = 0;
@@ -93,7 +93,7 @@ void main_memory_save(main_memory_t *mem, FILE *memout)
 
 bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word *data, bool_t *shared)
 {
-    if (bus->transaction_open)
+    if (bus->transaction_open && cmd != BUS_COMMAND_FLUSH)
     {
         return FALSE;
     }
@@ -107,11 +107,11 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
         }
     }
 
-    if (id == BUS_ORIGID_MAIN_MEMORY)
+    if (id == BUS_ORIGID_MAIN_MEMORY || cmd == BUS_COMMAND_READX)
     {
         return TRUE;
     }
-    if (cmd != BUS_COMMAND_READ && cmd != BUS_COMMAND_READX)
+    if (cmd != BUS_COMMAND_READ)
     {
         return FALSE;
     }
@@ -121,12 +121,12 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
     bus->flush_count = 0;
 
     // set main memory to return data
-    bus->memory.latency_cycles = 16;
-    bus->memory.pending_addr = addr & 0xFFFFFFFC; // set lower 2 bit to zero to get the block address at first word
-    bus->memory.transaction_pending = TRUE;
+    bus->memory->latency_cycles = 16;
+    bus->memory->pending_addr = BLOCK_ADDR_FROM_BYTE(addr); // set lower 2 bit to zero to get the block address at first word
+    bus->memory->transaction_pending = TRUE;
 
     arbitor_on_transaction_start(bus->arbitor, id);
-    return FALSE;
+    return TRUE;
 }
 
 bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data)
