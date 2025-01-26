@@ -138,7 +138,11 @@ int main(int argc, char *argv[])
 		{
 			core_clk(&cores[cored_prioritized[i]]);
 		}
+		main_memory_clk(&main_mem);
 
+//		if (is_halted(&cores[3])) {
+//			break;
+//		}
 	}
 	cored_prioritized = arbitor_prioritize(&arbitor);
 	for (int i = 0; i < NUM_CORES; i++)

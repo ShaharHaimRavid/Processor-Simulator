@@ -36,6 +36,7 @@ typedef struct
 	uint32_t instruction;
 	uint32_t stalls;
 	bool_t delay_slot;
+	bool_t stop;
 	uint32_t delay_slot_instruction;
 } instruction_fetch_state;
 
@@ -95,6 +96,7 @@ typedef struct
 	uint32_t do_work;
 	uint16_t pc;
 	uint32_t instruction;
+	OPCODES opcode;
 
 	uint8_t rd;
 	uint32_t mem_data;
