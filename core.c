@@ -28,7 +28,7 @@ uint32_t register_read(uint32_t *regs, uint16_t addr)
 
 void core_save(core_t *core)
 {
-	printf("core save %d \n", core->id);
+	//printf("core save %d \n", core->id);
 	for (int i = 2; i < 16; i++)
 	{
 		fprintf(core->files->regout, "%08X\n", core->registers[i]);
@@ -113,6 +113,7 @@ void core_free(core_t *core)
 
 void core_instruction_fetch(core_t *core)
 {
+	printf("core #%d. FETCH step \n", core->id);
 
 	if (core->halted)
 		return;
@@ -333,6 +334,8 @@ void core_execute(core_t *core)
 
 	printf("core #%d. EX instruction %08x\n", core->id, core->execute.instruction);
 
+	//printf("core #%d. instruction %08x\n", core->id, core->execute.instruction);
+
 	// execute instruction
 	//if (core->execute.opcode == 16 || core->execute.opcode == 17) {
 		//printf("core: %d opcode %02x\n",core->id, core->execute.opcode);
@@ -395,8 +398,8 @@ void core_execute(core_t *core)
 		break;
 	}
 
-	if (!core->memory_access.action_success) {
-		return;
+	if (!core->halted) {
+		core->memory_access.do_work = 1;
 	}
 	core->memory_access.pc = core->execute.pc;
 	core->memory_access.opcode = core->execute.opcode;

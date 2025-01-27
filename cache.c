@@ -56,8 +56,7 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 
 	if (origid == BUS_ORIGID_MAIN_MEMORY)
 	{
-		if (cmd != BUS_COMMAND_FLUSH || c->pending_addr != addr) {
-			printf("cmd != BUS_COMMAND_FLUSH || c->pending_addr != addr\n");
+		if (cmd != BUS_COMMAND_FLUSH || c->pending_addr != addr)
 			return;
 		}
 
@@ -65,7 +64,8 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 		{
 			c->pending_addr = 0;
 			c->metadata[set] = CREATE_META_DATA(tag, shared ? MESI_SHARED : MESI_EXCLUSIVE);
-			printf("cache_snoop: main memory flush complete, addr=0x%08X, set=%d, tag=0x%03X\n",addr, set, tag);
+			printf("cache_snoop: main memory flush complete, set=%d, tag=0x%03X\n", set, tag);
+		}
 
 		}
 		c->data[set][offset] = data;
@@ -180,7 +180,7 @@ bool_t cache_read(cache_t* c, uint32_t addr, uint32_t* data)
 	return FALSE;
 }
 
-bool_t cache_write(cache_t* c, uint32_t addr, uint32_t data)
+bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 {
 	printf("cache_write: addr=0x%08X, data=0x%08X\n", addr, data);
 	uint8_t index_of_block;
@@ -212,7 +212,7 @@ bool_t cache_write(cache_t* c, uint32_t addr, uint32_t data)
 }
 
 // Save the data array of the cache to the dsram file
-void dsram_save(cache_t* c, FILE* dsram)
+void dsram_save(cache_t *c, FILE *dsram)
 {
 	// Iterate over the 64 blocks in the cache
 	for (int i = 0; i < 64; i++)
@@ -227,7 +227,7 @@ void dsram_save(cache_t* c, FILE* dsram)
 }
 
 // Save the metadata array of the cache to the tsram file
-void tsram_save(cache_t* c, FILE* tsram)
+void tsram_save(cache_t *c, FILE *tsram)
 {
 	// Validate inputs
 	if (!c || !tsram)
