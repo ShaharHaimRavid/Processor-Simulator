@@ -58,15 +58,12 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 	{
 		if (cmd != BUS_COMMAND_FLUSH || c->pending_addr != addr)
 			return;
-		}
 
 		if (c->pending_addr % 4 == 3) // last word of block
 		{
 			c->pending_addr = 0;
 			c->metadata[set] = CREATE_META_DATA(tag, shared ? MESI_SHARED : MESI_EXCLUSIVE);
 			printf("cache_snoop: main memory flush complete, set=%d, tag=0x%03X\n", set, tag);
-		}
-
 		}
 		c->data[set][offset] = data;
 		c->pending_addr++;
