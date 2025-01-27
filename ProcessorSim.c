@@ -97,7 +97,6 @@ int main(int argc, char *argv[])
 	// ========================================================
 	//	Initialize datastructures
 	// ========================================================
-	//printf("init step\n");
 	core_arbitor_t arbitor;
 	arbitor_init(&arbitor);
 
@@ -124,14 +123,11 @@ int main(int argc, char *argv[])
 	// ========================================================
 	//	Simulation
 	// ========================================================
-	//printf("simulation step\n");
 	int* cored_prioritized;
 	while (!is_halted(&cores[0]) || !is_halted(&cores[1]) || !is_halted(&cores[2]) || !is_halted(&cores[3]))
 	{
-
 		// we call the core_clk function for each core in the priorized order
 		// to verify the correct core gets the memory access transaction
-		//core_clk(&cores[0]);
 
 		cored_prioritized = arbitor_prioritize(&arbitor);
 		for (int i = 0; i < NUM_CORES; i++)
@@ -139,10 +135,6 @@ int main(int argc, char *argv[])
 			core_clk(&cores[cored_prioritized[i]]);
 		}
 		main_memory_clk(&main_mem);
-
-//		if (is_halted(&cores[3])) {
-//			break;
-//		}
 	}
 	cored_prioritized = arbitor_prioritize(&arbitor);
 	for (int i = 0; i < NUM_CORES; i++)
@@ -152,7 +144,6 @@ int main(int argc, char *argv[])
 	// ========================================================
 	//	Save data to output files
 	// ========================================================
-	//printf("save step\n");
 	for (int i = 0; i < NUM_CORES; i++)
 	{
 		core_save(&cores[i]);
@@ -160,7 +151,6 @@ int main(int argc, char *argv[])
 		core_files_close(&core_files[i]);
 	}
 	main_memory_save(&main_mem, mem_files.memout);
-	//printf("4\n");
 	main_memory_free(&main_mem);
 	mem_files_close(&mem_files);
 	printf("finished successfully\n");

@@ -28,7 +28,7 @@ uint32_t register_read(uint32_t *regs, uint16_t addr)
 
 void core_save(core_t *core)
 {
-	//printf("core save %d \n", core->id);
+	printf("core save %d \n", core->id);
 	for (int i = 2; i < 16; i++)
 	{
 		fprintf(core->files->regout, "%08X\n", core->registers[i]);
@@ -113,7 +113,7 @@ void core_free(core_t *core)
 
 void core_instruction_fetch(core_t *core)
 {
-	//printf("core #%d. FETCH step \n", core->id);
+	printf("core #%d. FETCH step \n", core->id);
 
 	if (core->halted)
 		return;
@@ -125,7 +125,6 @@ void core_instruction_fetch(core_t *core)
 		core->fetch.stalls--;
 		return;
 	}
-	//printf("core #%d. FETCH step \n", core->id);
 	core->fetch.instruction = instruction_memory_read(core->imem, core->fetch.pc);
 	
 	if (core->fetch.delay_slot) {
@@ -148,10 +147,9 @@ uint32_t core_is_data_hazard(core_t *core)
 	JAL writes to register 15 only, so only if this is rt or rs there is a hazard
 	BEQ, BNE, BLT, BGT, BLE, BGE do not write to any register -> no hazard
 	*/
-	//printf("in core_is_data_hazard op = %02x,rs=%d, rd = %d \n", core->decode.opcode, core->decode.rs, core->write_back.rd);
+	printf("in core_is_data_hazard op = %02x,rs=%d, rd = %d \n", core->decode.opcode, core->decode.rs, core->write_back.rd);
 	if (!(core->execute.opcode == OPCODE_SW || core->execute.opcode == OPCODE_LW || (core->execute.opcode >= 9 && core->execute.opcode <= 14)))
 		if (!(core->decode.opcode == OPCODE_LW) && !(core->decode.opcode == OPCODE_SW) && (core->decode.rt == core->execute.rd || core->decode.rs == core->execute.rd)) {
-			//printf("decode.rs = %d, execute.rd = %d,  \n", core->decode.rs, core->execute.rd);
 			return 2;
 		}
 	if (!(core->decode.opcode == OPCODE_SW || core->decode.opcode == OPCODE_LW || (core->decode.opcode >= 9 && core->decode.opcode <= 14)))
@@ -187,7 +185,6 @@ uint32_t core_is_data_hazard(core_t *core)
 bool_t check_hazard(core_t* core) {
 	if (core->decode.opcode >= 9 && core->decode.opcode <= 14)
 		if (core->decode.rs == core->write_back.rd || core->decode.rt == core->write_back.rd) {
-			//printf("hazard !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 			return 1;
 		}
 //	if (core->decode.opcode >= 9 && core->decode.opcode <= 14)
@@ -207,7 +204,7 @@ void core_instruction_decode(core_t *core)
 		core->decode.stalls--;
 		return;
 	}
-	//printf("core #%d. DECODE step instruction %08x\n", core->id, core->decode.instruction);
+	printf("core #%d. DECODE step instruction %08x\n", core->id, core->decode.instruction);
 	// decode instruction
 	core->fetch.stop = 0;
 	core->decode.imm = INSTRUCTION_PARSE_BITS(core->decode.instruction, 0, INSTRUCTION_12BIT_MASK);
@@ -216,16 +213,10 @@ void core_instruction_decode(core_t *core)
 	core->decode.rd = INSTRUCTION_PARSE_BITS(core->decode.instruction, 20, INSTRUCTION_4BIT_MASK);
 	core->decode.opcode = INSTRUCTION_PARSE_BITS(core->decode.instruction, 24, INSTRUCTION_8BIT_MASK);
 	// stall if Read after Write
-	//if (core->decode.opcode == 16 || core->decode.opcode == 17) {
-		//printf("core: %d decode.opcode %02x\n", core->id, core->decode.opcode);
-	//}
 	uint32_t num_stalls = core_is_data_hazard(core);
-	//printf("num_stalls %d\n ", num_stalls);
 	if (core->decode.instruction != 0) {
 		if (num_stalls)
 		{
-			//printf("hazard !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-			//printf("stalling\n");
 			//core->fetch.stalls = max(num_stalls, core->fetch.stalls);
 			core->decode.stalls = max(num_stalls, core->decode.stalls);
 			core->fetch.stop = 1;
@@ -288,7 +279,6 @@ void core_instruction_decode(core_t *core)
 			break;
 		case OPCODE_BLT:
 			if (rsv < rtv) {
-				//printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!rtv rsv %d %d\n", rtv, rsv);
 				core->fetch.delay_slot = 1;
 				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
 				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
@@ -332,14 +322,9 @@ void core_execute(core_t *core)
 		return;
 	}
 
-	//printf("core #%d. EX instruction %08x\n", core->id, core->execute.instruction);
-
-	//printf("core #%d. instruction %08x\n", core->id, core->execute.instruction);
+	printf("core #%d. EX instruction %08x\n", core->id, core->execute.instruction);
 
 	// execute instruction
-	//if (core->execute.opcode == 16 || core->execute.opcode == 17) {
-		//printf("core: %d opcode %02x\n",core->id, core->execute.opcode);
-	//}
 	switch (core->execute.opcode)
 	{
 	case OPCODE_ADD:
@@ -394,7 +379,6 @@ void core_execute(core_t *core)
 		//core->memory_access.empty = 1;
 		//core->memory_access.do_work = 0;
 		//core->write_back.do_work = 0;
-		//printf("SHOULD HALT HERE !!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 		break;
 	}
 
@@ -420,8 +404,7 @@ void core_memory_access(core_t *core)
 	if (!core->memory_access.do_work) {
 		return;
 	}
-	//printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
-	//printf("core->memory_access.state %d \n", core->memory_access.state);
+	printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
 	// memory access
 	core->write_back.pc = core->memory_access.pc;
 	core->write_back.instruction = core->memory_access.instruction;
@@ -430,7 +413,6 @@ void core_memory_access(core_t *core)
 	core->write_back.do_work = 1;
 
 	if (core->memory_access.state == MEM_ACCESS_NONE) {
-		//printf("core #%d. MEM_ACCESS_NONE \n", core->id );
 		return;
 	}
 
@@ -447,7 +429,6 @@ void core_memory_access(core_t *core)
 
 	if (!core->memory_access.action_success)
 	{
-		//printf("mem failed\n");
 		// stall the pipeline
 		//core->fetch.stalls = max(1, core->fetch.stalls);
 		core->fetch.stop = 1;
@@ -469,15 +450,16 @@ void core_write_back(core_t *core)
 	if (!core->write_back.do_work) {
 		return;
 	}
-	//printf("core #%d. WB step instruction %08x\n", core->id, core->write_back.instruction);
+	printf("core #%d. WB step instruction %08x\n", core->id, core->write_back.instruction);
 
 	// write back
 	register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data
-	//printf("rd %d, val: %d\n", core->write_back.rd, core->write_back.mem_data);
 }
 
 void core_clk(core_t *core)
 {
+	if (core->halted)
+		return;
 	core->cycles_count++;
 	core_write_back(core);
 	core_memory_access(core);

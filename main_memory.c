@@ -28,7 +28,6 @@ void main_memory_bus_init(main_memory_bus_t* bus, FILE* bustrace, main_memory_t*
     bus->bustrace_file = bustrace;
     bus->memory = mem;
     mem->bus_data = bus;
-    bus->transaction_open = FALSE;
     bus->flush_count = 0;
     bus->transaction_origid = BUS_ORIGID_MAIN_MEMORY;
     bus->arbitor = arbitor;
@@ -93,7 +92,7 @@ void main_memory_save(main_memory_t* mem, FILE* memout)
 
 bool_t main_memory_bus_action(main_memory_bus_t* bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word* data, bool_t* shared)
 {
-    if (bus->transaction_open && cmd != BUS_COMMAND_FLUSH)
+    if (bus->memory->transaction_pending && cmd != BUS_COMMAND_FLUSH)
     {
         return FALSE;
     }
@@ -116,7 +115,6 @@ bool_t main_memory_bus_action(main_memory_bus_t* bus, bus_origid_t id, bus_addr_
         return FALSE;
     }
 
-    bus->transaction_open = TRUE;
     bus->transaction_origid = id;
     bus->flush_count = 0;
 
@@ -131,7 +129,7 @@ bool_t main_memory_bus_action(main_memory_bus_t* bus, bus_origid_t id, bus_addr_
 
 bool_t main_memory_bus_write(main_memory_bus_t* bus, bus_addr_t addr, block data)
 {
-    main_memory_write(&bus->memory, addr, data);
+    main_memory_write(bus->memory, addr, data);
     return TRUE;
 }
 
@@ -150,7 +148,7 @@ void main_memory_clk(main_memory_t* mem)
     }
     bool_t shared;
     main_memory_bus_t* bus = (main_memory_bus_t*)mem->bus_data;
-    main_memory_bus_action(bus, BUS_ORIGID_MAIN_MEMORY, mem->pending_addr, BUS_COMMAND_FLUSH, mem->data[mem->pending_addr], &shared);
+    main_memory_bus_action(bus, BUS_ORIGID_MAIN_MEMORY, mem->pending_addr, BUS_COMMAND_FLUSH, mem->data + mem->pending_addr, &shared);
     mem->pending_addr++;            // increment to next word
     if (mem->pending_addr % 4 == 0) // last word of block
     {

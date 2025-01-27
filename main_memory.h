@@ -56,7 +56,6 @@ typedef struct
 	main_memory_t *memory;
 	FILE *bustrace_file;
 
-	bool_t transaction_open;
 	uint16_t flush_count;
 	bus_origid_t transaction_origid;
 	core_arbitor_t *arbitor;
