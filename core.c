@@ -113,7 +113,7 @@ void core_free(core_t *core)
 
 void core_instruction_fetch(core_t *core)
 {
-	printf("core #%d. FETCH step \n", core->id);
+	//printf("core #%d. FETCH step \n", core->id);
 
 	if (core->halted)
 		return;
@@ -125,7 +125,7 @@ void core_instruction_fetch(core_t *core)
 		core->fetch.stalls--;
 		return;
 	}
-	printf("core #%d. FETCH step \n", core->id);
+	//printf("core #%d. FETCH step \n", core->id);
 	core->fetch.instruction = instruction_memory_read(core->imem, core->fetch.pc);
 	
 	if (core->fetch.delay_slot) {
@@ -151,7 +151,7 @@ uint32_t core_is_data_hazard(core_t *core)
 	//printf("in core_is_data_hazard op = %02x,rs=%d, rd = %d \n", core->decode.opcode, core->decode.rs, core->write_back.rd);
 	if (!(core->execute.opcode == OPCODE_SW || core->execute.opcode == OPCODE_LW || (core->execute.opcode >= 9 && core->execute.opcode <= 14)))
 		if (!(core->decode.opcode == OPCODE_LW) && !(core->decode.opcode == OPCODE_SW) && (core->decode.rt == core->execute.rd || core->decode.rs == core->execute.rd)) {
-			printf("decode.rs = %d, execute.rd = %d,  \n", core->decode.rs, core->execute.rd);
+			//printf("decode.rs = %d, execute.rd = %d,  \n", core->decode.rs, core->execute.rd);
 			return 2;
 		}
 	if (!(core->decode.opcode == OPCODE_SW || core->decode.opcode == OPCODE_LW || (core->decode.opcode >= 9 && core->decode.opcode <= 14)))
@@ -207,7 +207,7 @@ void core_instruction_decode(core_t *core)
 		core->decode.stalls--;
 		return;
 	}
-	printf("core #%d. DECODE step instruction %08x\n", core->id, core->decode.instruction);
+	//printf("core #%d. DECODE step instruction %08x\n", core->id, core->decode.instruction);
 	// decode instruction
 	core->fetch.stop = 0;
 	core->decode.imm = INSTRUCTION_PARSE_BITS(core->decode.instruction, 0, INSTRUCTION_12BIT_MASK);
@@ -332,7 +332,7 @@ void core_execute(core_t *core)
 		return;
 	}
 
-	printf("core #%d. EX instruction %08x\n", core->id, core->execute.instruction);
+	//printf("core #%d. EX instruction %08x\n", core->id, core->execute.instruction);
 
 	//printf("core #%d. instruction %08x\n", core->id, core->execute.instruction);
 
@@ -420,7 +420,7 @@ void core_memory_access(core_t *core)
 	if (!core->memory_access.do_work) {
 		return;
 	}
-	printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
+	//printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
 	//printf("core->memory_access.state %d \n", core->memory_access.state);
 	// memory access
 	core->write_back.pc = core->memory_access.pc;
@@ -430,7 +430,7 @@ void core_memory_access(core_t *core)
 	core->write_back.do_work = 1;
 
 	if (core->memory_access.state == MEM_ACCESS_NONE) {
-		printf("core #%d. MEM_ACCESS_NONE \n", core->id );
+		//printf("core #%d. MEM_ACCESS_NONE \n", core->id );
 		return;
 	}
 
@@ -447,7 +447,7 @@ void core_memory_access(core_t *core)
 
 	if (!core->memory_access.action_success)
 	{
-		printf("mem failed\n");
+		//printf("mem failed\n");
 		// stall the pipeline
 		//core->fetch.stalls = max(1, core->fetch.stalls);
 		core->fetch.stop = 1;
@@ -469,7 +469,7 @@ void core_write_back(core_t *core)
 	if (!core->write_back.do_work) {
 		return;
 	}
-	printf("core #%d. WB step instruction %08x\n", core->id, core->write_back.instruction);
+	//printf("core #%d. WB step instruction %08x\n", core->id, core->write_back.instruction);
 
 	// write back
 	register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data

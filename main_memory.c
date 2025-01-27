@@ -95,7 +95,6 @@ bool_t main_memory_bus_action(main_memory_bus_t* bus, bus_origid_t id, bus_addr_
 {
     if (bus->transaction_open && cmd != BUS_COMMAND_FLUSH)
     {
-        printf("bus->transaction_open && cmd != BUS_COMMAND_FLUSH\n");
         return FALSE;
     }
 

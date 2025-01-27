@@ -18,18 +18,19 @@ bool_t cache_find(cache_t* c, uint32_t addr, uint8_t* index_of_block)
 	for (int i = 0; i < 4; i++)
 	{
 		uint16_t meta_of_block = c->metadata[index + i];
-		if (METADATA_TAG(meta_of_block) != tag)
-			continue;
-
-		found = TRUE;
-		*index_of_block = index + i;
+		if (METADATA_TAG(meta_of_block) == tag)
+		{
+			found = TRUE;
+			*index_of_block = index + i;
+			break;
+		}
 	}
 	return found;
 }
 
 void cache_flush(cache_t* c, uint8_t index_of_block)
 {
-	printf("cache_flush: index_of_block=%d\n", index_of_block);
+	printf("cache %d flush: index_of_block=%d\n",c->id, index_of_block);
 	uint16_t tag = METADATA_TAG(c->metadata[index_of_block]);
 	uint16_t index = index_of_block / 4;
 	uint16_t addr = (tag << 8) | (index << 4) | 0x0;
@@ -50,7 +51,7 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 	uint8_t index_of_block;
 	bool_t found = cache_find(c, addr, &index_of_block);
 
-	printf("cache_snoop: origid=%d, cmd=%d, addr=0x%08X, data=0x%08X, found=%d\n", origid, cmd, addr, data, found);
+	printf("cache %d snoop: origid=%d, cmd=%d, addr=0x%08X, data=0x%08X, found=%d\n", c->id, origid, cmd, addr, data, found);
 
 	*shared |= found; // raise shared bit if found
 
@@ -58,16 +59,20 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 	{
 		if (cmd != BUS_COMMAND_FLUSH || c->pending_addr != addr)
 			return;
-
+		
+		c->data[index_of_block][offset] = data;
+		printf("cache_snoop: main memory write, set=%d, offset=%d, data=0x%08X\n", set, offset, data);
 		if (c->pending_addr % 4 == 3) // last word of block
 		{
 			c->pending_addr = 0;
-			c->metadata[set] = CREATE_META_DATA(tag, shared ? MESI_SHARED : MESI_EXCLUSIVE);
+			c->metadata[index_of_block] = CREATE_META_DATA(tag, (shared ? MESI_SHARED : MESI_EXCLUSIVE));
+			printf("mesi: %d\n", METADATA_MESI(c->metadata[index_of_block]));
+			printf("index_of_block %d \n", index_of_block);
+			printf("c->metadata[index_of_block] %d \n", c->metadata[index_of_block]);
+			printf("c->metadata[set] %d \n", c->metadata[set]);
 			printf("cache_snoop: main memory flush complete, set=%d, tag=0x%03X\n", set, tag);
 		}
-		c->data[set][offset] = data;
 		c->pending_addr++;
-		printf("cache_snoop: main memory write, set=%d, offset=%d, data=0x%08X\n", set, offset, data);
 		return;
 	}
 
@@ -75,7 +80,7 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 		return;
 
 	MESI mesi = METADATA_MESI(c->metadata[index_of_block]);
-	printf("cache_snoop: MESI state=%d, index_of_block=%d\n", mesi, index_of_block);
+	printf("cache %d snoop: MESI state=%d, index_of_block=%d\n", c->id, mesi, index_of_block);
 
 	// ========================================
 	// MESI Protocol - handle status of blocks
@@ -87,32 +92,32 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 		{
 			cache_flush(c, index_of_block);
 			c->metadata[index_of_block] = CREATE_META_DATA(tag, MESI_SHARED);
-			printf("cache_snoop: MESI_MODIFIED -> MESI_SHARED, index_of_block=%d\n", index_of_block);
+			printf("cache %d snoop: MESI_MODIFIED -> MESI_SHARED, index_of_block=%d\n", c->id, index_of_block);
 		}
 		else if (cmd == BUS_COMMAND_READX)
 		{
 			cache_flush(c, index_of_block);
 			c->metadata[index_of_block] = CREATE_META_DATA(tag, MESI_INVALID);
-			printf("cache_snoop: MESI_MODIFIED -> MESI_INVALID, index_of_block=%d\n", index_of_block);
+			printf("cache %d snoop: MESI_MODIFIED -> MESI_INVALID, index_of_block=%d\n", c->id, index_of_block);
 		}
 		break;
 	case MESI_EXCLUSIVE:
 		if (cmd == BUS_COMMAND_READ)
 		{
 			c->metadata[index_of_block] = CREATE_META_DATA(tag, MESI_SHARED);
-			printf("cache_snoop: MESI_EXCLUSIVE -> MESI_SHARED, index_of_block=%d\n", index_of_block);
+			printf("cache %d snoop: MESI_EXCLUSIVE -> MESI_SHARED, index_of_block=%d\n", c->id, index_of_block);
 		}
 		else if (cmd == BUS_COMMAND_READX)
 		{
 			c->metadata[index_of_block] = CREATE_META_DATA(tag, MESI_INVALID);
-			printf("cache_snoop: MESI_EXCLUSIVE -> MESI_INVALID, index_of_block=%d\n", index_of_block);
+			printf("cache %d snoop: MESI_EXCLUSIVE -> MESI_INVALID, index_of_block=%d\n", c->id, index_of_block);
 		}
 		break;
 	case MESI_SHARED:
 		if (cmd == BUS_COMMAND_READX)
 		{
 			c->metadata[index_of_block] = CREATE_META_DATA(tag, MESI_INVALID);
-			printf("cache_snoop: MESI_SHARED -> MESI_INVALID, index_of_block=%d\n", index_of_block);
+			printf("cache %d snoop: MESI_SHARED -> MESI_INVALID, index_of_block=%d\n", c->id, index_of_block);
 		}
 		break;
 	}
@@ -143,7 +148,7 @@ void cache_init(cache_t* c, main_memory_bus_t* bus, int8_t id)
 
 bool_t cache_read(cache_t* c, uint32_t addr, uint32_t* data)
 {
-	printf("cache_read: addr=0x%08X\n", addr);
+	printf("cache %d read: addr=0x%08X\n", c->id, addr);
 	uint8_t index_of_block;
 	bool_t found = cache_find(c, addr, &index_of_block);
 
@@ -162,24 +167,24 @@ bool_t cache_read(cache_t* c, uint32_t addr, uint32_t* data)
 	{
 		// data is in cache
 		*data = c->data[index_of_block][offset];
-		printf("cache_read: hit, data=0x%08X\n", *data);
+		printf("cache %d read: hit, data=0x%08X\n", c->id, *data);
 		return TRUE;
 	}
 
 	// no data in cache (or invalid), need to fetch from memory
-	printf("cache_read: miss, fetching from memory\n");
+	printf("cache %d read: miss, fetching from memory\n", c->id);
 	word w;
 	bool_t shared;
 	bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READ, &w, &shared);
 	if (ret) // got transaction from round-robin
 		c->pending_addr = BLOCK_ADDR_FROM_BYTE(addr);
-	printf("cache_read: got ret %d \n", ret);
+	printf("cache %d read: got ret %d \n", c->id, ret);
 	return FALSE;
 }
 
 bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 {
-	printf("cache_write: addr=0x%08X, data=0x%08X\n", addr, data);
+	printf("cache %d write: addr=0x%08X, data=0x%08X\n", c->id, addr, data);
 	uint8_t index_of_block;
 	bool_t found = cache_find(c, addr, &index_of_block);
 
@@ -191,20 +196,20 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 
 	if (!found || mesi == MESI_INVALID || mesi == MESI_SHARED)
 	{
-		printf("cache_write: miss or invalid/shared, fetching from memory\n");
+		printf("cache %d write: miss or invalid/shared, fetching from memory\n", c->id);
 		word w;
 		bool_t shared;
 		bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READX, &w, &shared);
 		if (!ret)
 		{
-			printf("cache_write: memory fetch failed\n");
+			printf("cache %d write: memory fetch failed\n", c->id);
 			return FALSE;
 		}
 	}
 
 	c->data[index_of_block][offset] = data;
 	c->metadata[index_of_block] = tag | MESI_MODIFIED << 12;
-	printf("cache_write: write complete\n");
+	printf("cache %d write: write complete\n", c->id);
 	return TRUE;
 }
 
