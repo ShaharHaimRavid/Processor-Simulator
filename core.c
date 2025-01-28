@@ -487,7 +487,7 @@ void core_memory_access(core_t *core)
 	}
 	if (core->memory_access.action_success)
 	{
-		printf("success!!!!!!!!!!!!");
+		printf("success!!!!!!!!!!!!\n");
 		core->memory_access.state = MEM_ACCESS_NONE;
 		core->memory_access.do_work = 0;
 	}

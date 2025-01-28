@@ -4,28 +4,19 @@
 #define METADATA_TAG(x) (x & 0xFFF)
 #define METADATA_MESI(x) ((x >> 12) & 0x3)
 #define ADDRESS_TAG(x) ((x >> 8) & 0xFFF)
-#define ADDRESS_INDEX(x) ((x >> 4) & 0xF)
-#define ADDRESS_OFFSET(x) ((x & 0xF) >> 2)
+#define ADDRESS_INDEX(x) ((x >> 2) & 0x3F)
+#define ADDRESS_OFFSET(x) (x & 0x3)
 #define CREATE_META_DATA(tag, mesi) (tag | (mesi << 12))
 
 bool_t cache_find(cache_t* c, uint32_t addr, uint8_t* index_of_block)
 {
 	addr = addr & 0xFFFFF; // addr is 20 bits
 	uint16_t tag = ADDRESS_TAG(addr);
-	uint16_t index = ADDRESS_INDEX(addr);
+	*index_of_block = ADDRESS_INDEX(addr);
 
 	bool_t found = FALSE;
-	for (int i = 0; i < 4; i++)
-	{
-		uint16_t meta_of_block = c->metadata[index + i];
-		if (METADATA_TAG(meta_of_block) == tag)
-		{
-			found = TRUE;
-			*index_of_block = index + i;
-			break;
-		}
-	}
-	return found;
+	uint16_t meta_of_block = c->metadata[*index_of_block];
+	return (METADATA_TAG(meta_of_block) == tag && METADATA_MESI(meta_of_block) != MESI_INVALID);
 }
 
 void cache_flush(cache_t* c, uint8_t index_of_block)
@@ -57,7 +48,7 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 		if (cmd != BUS_COMMAND_FLUSH || c->pending_addr != addr)
 			return;
 		
-		c->data[index_of_block][offset] = data;
+		c->data[set][offset] = data;
 		printf("snoop: index of block %d offset %d data %08x\n", index_of_block, offset, data);
 		if (c->pending_addr % 4 == 3) // last word of block
 		{
@@ -152,9 +143,8 @@ bool_t cache_read(cache_t* c, uint32_t addr, uint32_t* data)
 	}
 
 	// no data in cache (or invalid), need to fetch from memory
-	word w;
 	bool_t shared;
-	bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READ, &w, &shared);
+	bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READ, 0, &shared);
 	if (ret) // got transaction from round-robin
 		c->pending_addr = BLOCK_ADDR_FROM_BYTE(addr);
 	return FALSE;
@@ -173,9 +163,8 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 
 	if (!found || mesi == MESI_INVALID || mesi == MESI_SHARED)
 	{
-		word w;
 		bool_t shared;
-		bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READX, &w, &shared);
+		bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READX, 0, &shared);
 		if (!ret)
 		{
 			return FALSE;

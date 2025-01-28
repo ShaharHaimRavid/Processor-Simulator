@@ -1,6 +1,6 @@
 #include "main_memory.h"
 
-void main_memory_write(main_memory_t* mem, bus_addr_t addr, block data)
+void main_memory_write(main_memory_t *mem, bus_addr_t addr, block data)
 {
     // Copy the data from the block to the memory
     for (int i = 0; i < 4; i++)
@@ -8,7 +8,7 @@ void main_memory_write(main_memory_t* mem, bus_addr_t addr, block data)
         mem->data[addr + i] = data[i];
     }
 }
-void main_memory_read(main_memory_t* mem, bus_addr_t addr, block* data)
+void main_memory_read(main_memory_t *mem, bus_addr_t addr, block *data)
 {
     // Copy the data from the memory to the block
     for (int i = 0; i < 4; i++)
@@ -17,13 +17,13 @@ void main_memory_read(main_memory_t* mem, bus_addr_t addr, block* data)
     }
 }
 
-void main_memory_bus_snoop_observe(main_memory_bus_t* bus, bus_origid_t id, bus_snoop_cb_t cb, void* user_data)
+void main_memory_bus_snoop_observe(main_memory_bus_t *bus, bus_origid_t id, bus_snoop_cb_t cb, void *user_data)
 {
     bus->observers[id] = cb;
     bus->observers_data[id] = user_data;
 }
 
-void main_memory_bus_init(main_memory_bus_t* bus, FILE* bustrace, main_memory_t* mem, core_arbitor_t* arbitor)
+void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem, core_arbitor_t *arbitor)
 {
     bus->bustrace_file = bustrace;
     bus->memory = mem;
@@ -33,9 +33,9 @@ void main_memory_bus_init(main_memory_bus_t* bus, FILE* bustrace, main_memory_t*
     bus->arbitor = arbitor;
 }
 
-void main_memory_init(main_memory_t* mem, core_arbitor_t* arbitor)
+void main_memory_init(main_memory_t *mem, core_arbitor_t *arbitor)
 {
-    mem->data = (uint32_t*)calloc(1 << 20, sizeof(uint32_t));
+    mem->data = (uint32_t *)calloc(1 << 20, sizeof(uint32_t));
     mem->latency_cycles = 0;
     mem->pending_addr = 0;
     mem->transaction_pending = FALSE;
@@ -43,12 +43,12 @@ void main_memory_init(main_memory_t* mem, core_arbitor_t* arbitor)
     mem->arbitor = arbitor;
 }
 
-void main_memory_free(main_memory_t* mem)
+void main_memory_free(main_memory_t *mem)
 {
     free(mem->data);
 }
 
-void main_memory_load(main_memory_t* mem, FILE* memin)
+void main_memory_load(main_memory_t *mem, FILE *memin)
 {
     char line[9]; // To store a line of 8 hex digits plus the null terminator
     int i = 0;
@@ -77,11 +77,12 @@ void main_memory_load(main_memory_t* mem, FILE* memin)
         mem->data[i] = (uint32_t)strtol(line, NULL, 16);
         i++;
     }
-    for (i = 0; i < 64; i++) {
+    for (i = 0; i < 64; i++)
+    {
         printf("%08x\n", mem->data[i]);
     }
 }
-void main_memory_save(main_memory_t* mem, FILE* memout)
+void main_memory_save(main_memory_t *mem, FILE *memout)
 {
     // Start from the first line and go up to the last non-zero line
     uint32_t last_non_zero = 0;
@@ -102,7 +103,7 @@ void main_memory_save(main_memory_t* mem, FILE* memout)
     }
 }
 
-bool_t main_memory_bus_action(main_memory_bus_t* bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word* data, bool_t* shared)
+bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word data, bool_t *shared)
 {
     if (bus->memory->transaction_pending && cmd != BUS_COMMAND_FLUSH)
     {
@@ -114,7 +115,7 @@ bool_t main_memory_bus_action(main_memory_bus_t* bus, bus_origid_t id, bus_addr_
     {
         if (bus->observers[i] != NULL)
         {
-            bus->observers[i](id, cmd, addr, 0, shared, bus->observers_data[i]);
+            bus->observers[i](id, cmd, addr, data, shared, bus->observers_data[i]);
         }
     }
 
@@ -139,19 +140,19 @@ bool_t main_memory_bus_action(main_memory_bus_t* bus, bus_origid_t id, bus_addr_
     return TRUE;
 }
 
-bool_t main_memory_bus_write(main_memory_bus_t* bus, bus_addr_t addr, block data)
+bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data)
 {
     main_memory_write(bus->memory, addr, data);
     return TRUE;
 }
 
-void main_memory_clk(main_memory_t* mem)
+void main_memory_clk(main_memory_t *mem)
 {
     if (!mem->transaction_pending)
     {
         return;
     }
-    
+
     if (mem->latency_cycles > 0)
     {
         printf("mem->latency_cycles %d\n", mem->latency_cycles);
@@ -159,8 +160,8 @@ void main_memory_clk(main_memory_t* mem)
         return;
     }
     bool_t shared;
-    main_memory_bus_t* bus = (main_memory_bus_t*)mem->bus_data;
-    main_memory_bus_action(bus, BUS_ORIGID_MAIN_MEMORY, mem->pending_addr, BUS_COMMAND_FLUSH, mem->data + mem->pending_addr, &shared);
+    main_memory_bus_t *bus = (main_memory_bus_t *)mem->bus_data;
+    main_memory_bus_action(bus, BUS_ORIGID_MAIN_MEMORY, mem->pending_addr, BUS_COMMAND_FLUSH, mem->data[mem->pending_addr], &shared);
     mem->pending_addr++;            // increment to next word
     if (mem->pending_addr % 4 == 0) // last word of block
     {

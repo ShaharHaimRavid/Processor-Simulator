@@ -61,7 +61,7 @@ typedef struct
 	core_arbitor_t *arbitor;
 } main_memory_bus_t;
 
-bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word *data, bool_t *shared);
+bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word data, bool_t *shared);
 bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data);
 
 void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem, core_arbitor_t *arbitor);
