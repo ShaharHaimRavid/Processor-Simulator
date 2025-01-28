@@ -147,34 +147,94 @@ uint32_t core_is_data_hazard(core_t *core)
 	JAL writes to register 15 only, so only if this is rt or rs there is a hazard
 	BEQ, BNE, BLT, BGT, BLE, BGE do not write to any register -> no hazard
 	*/
-	printf("in core_is_data_hazard op = %02x,rs=%d, rd = %d \n", core->decode.opcode, core->decode.rs, core->write_back.rd);
-	if (!(core->execute.opcode == OPCODE_SW || core->execute.opcode == OPCODE_LW || (core->execute.opcode >= 9 && core->execute.opcode <= 14)))
-		if (!(core->decode.opcode == OPCODE_LW) && !(core->decode.opcode == OPCODE_SW) && (core->decode.rt == core->execute.rd || core->decode.rs == core->execute.rd)) {
-			return 2;
+	//printf("in core_is_data_hazard op = %02x,rs=%d, rd = %d \n", core->decode.opcode, core->decode.rs, core->write_back.rd);
+
+	/*  
+	00331001 mem
+	00000000 ex
+	0B031064 de
+
+	00431001 mem
+	00000000 ex
+	00541064 de
+	*/
+	if (core->decode.opcode >= 9 && core->decode.opcode <= 14 || (core->decode.opcode >= 0 && core->decode.opcode <= 8)) {
+		if (core->write_back.opcode == OPCODE_LW || core->write_back.opcode >= 0 && core->write_back.opcode <= 8) {
+			if (core->decode.rs == core->write_back.rd || core->decode.rt == core->write_back.rd) {
+				return 1;
+			}
 		}
-	if (!(core->decode.opcode == OPCODE_SW || core->decode.opcode == OPCODE_LW || (core->decode.opcode >= 9 && core->decode.opcode <= 14)))
+	}
+
+	/*
+	00331001 ex
+	0B031064 de
+
+	00431001 ex
+	00541064 de
+	*/
+
+	if (core->decode.opcode >= 9 && core->decode.opcode <= 14 || (core->decode.opcode >= 0 && core->decode.opcode <= 8)) { //branch or arithmetics
+		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8)) { // LW or arithmetics
+			if (core->decode.rs == core->memory_access.rd || core->decode.rt == core->memory_access.rd) {
+				return 2;
+			}
+		}
+	}
+
+
+	/*
+	10201011 ex
+	00221001 de
+
+	10201011 ex
+	10321001 de
+
+	10201011 ex
+	11321001 de
+	*/
+	if ((core->decode.opcode >= 0 && core->decode.opcode <= 8) || core->execute.opcode == OPCODE_LW || core->execute.opcode == OPCODE_SW) //branch is already covered
 		if (core->memory_access.opcode == OPCODE_LW) {
-			if(core->decode.rd == core->memory_access.rd){
+			if(core->decode.rs == core->memory_access.rd || core->decode.rt == core->memory_access.rd){
 				return 2;
 			}
 		}
 
-	if (!(core->decode.opcode == OPCODE_SW || core->decode.opcode == OPCODE_LW || (core->decode.opcode >= 9 && core->decode.opcode <= 14)))
+	/*
+	10201011 mem
+	00000000 ex
+	00221001 de
+	*/
+	if ((core->decode.opcode >= 0 && core->decode.opcode <= 8) || core->execute.opcode == OPCODE_LW || core->execute.opcode == OPCODE_SW)
 		if (core->write_back.opcode == OPCODE_LW) {
-			if (core->decode.rd == core->write_back.rd) {
-				return 2;
+			if (core->decode.rs == core->write_back.rd || core->decode.rt == core->write_back.rd) {
+				return 1;
 			}
 		}
+	/*
+	10201011 
+	00221001 
+	11201011 de
+	*/
+
+	if (core->decode.opcode == OPCODE_SW) {
+		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8)) { // LW or arithmetics
+			if (core->decode.rd == core->memory_access.rd || core->decode.rd == core->memory_access.rd) {
+				return 1;
+			}
+		}
+	}
+
+	/*
+	jal       ex
+	002151000 de
+	*/
 
 	if (core->execute.opcode == OPCODE_JAL)
 		if (core->decode.rt == 15 || core->decode.rs == 15) {
 			return 2;
 		}
 
-	if (!(core->memory_access.opcode == OPCODE_SW || core->execute.opcode == OPCODE_LW || (core->memory_access.opcode >= 9 && core->memory_access.opcode <= 14)))
-		if (!(core->decode.opcode == OPCODE_LW) && !(core->decode.opcode == OPCODE_SW) && (core->decode.rt == core->memory_access.rd || core->decode.rs == core->memory_access.rd)) {
-			return 1;
-		}
 	if (core->memory_access.opcode == OPCODE_JAL)
 		if (core->decode.rt == 15 || core->decode.rs == 15) {
 			return 1;
@@ -182,20 +242,9 @@ uint32_t core_is_data_hazard(core_t *core)
 	return 0;
 }
 
-bool_t check_hazard(core_t* core) {
-	if (core->decode.opcode >= 9 && core->decode.opcode <= 14)
-		if (core->decode.rs == core->write_back.rd || core->decode.rt == core->write_back.rd) {
-			return 1;
-		}
-//	if (core->decode.opcode >= 9 && core->decode.opcode <= 14)
-//		if (core->decode.rs == core->execute.rd || core->decode.rt == core->execute.rd)
-//			return 2;
-	return 0;
-}
 
 void core_instruction_decode(core_t *core)
 {
-	
 	if (core->halted) {
 		return;
 	}
@@ -227,19 +276,13 @@ void core_instruction_decode(core_t *core)
 			core->execute.pc = 0;
 			core->execute.instruction = 0;
 			core->execute.opcode = 0;
-			core->execute.rtv = 0;
-			core->execute.rsv = 0;
 			core->execute.rd = 0;
-			core->execute.rdv = 0;
 			core->execute.imm = 0;
 
 			return;
 		}
 	}
-	if (check_hazard(core)) {
-		core->fetch.stop = 1;
-		return;
-	}
+
 
 	// write to register 1 the imm value after sign extension
 	register_write(core->registers, 1, (uint32_t)core->decode.imm);
@@ -375,7 +418,7 @@ void core_execute(core_t *core)
 		core->memory_access.state = MEM_ACCESS_WRITE;
 		break;
 	case OPCODE_HALT:
-		core->halted = TRUE;
+		//core->halted = TRUE;
 		//core->memory_access.empty = 1;
 		//core->memory_access.do_work = 0;
 		//core->write_back.do_work = 0;
@@ -406,11 +449,13 @@ void core_memory_access(core_t *core)
 	}
 	printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
 	// memory access
+
 	core->write_back.pc = core->memory_access.pc;
 	core->write_back.instruction = core->memory_access.instruction;
 	core->write_back.rd = core->memory_access.rd;
 	core->write_back.mem_data = core->memory_access.alu_result; // write back the alu result
 	core->write_back.do_work = 1;
+	core->write_back.opcode = core->memory_access.opcode;
 
 	if (core->memory_access.state == MEM_ACCESS_NONE) {
 		return;
@@ -420,15 +465,18 @@ void core_memory_access(core_t *core)
 	{
 		// if the memory access is a read, read the data from memory and replace the mem_data value
 		core->memory_access.action_success = cache_read(core->cache, core->memory_access.alu_result, &core->write_back.mem_data);
+		printf("data: %08x addr: %02x\n", core->write_back.mem_data, core->memory_access.alu_result);
 	}
 	else if (core->memory_access.state == MEM_ACCESS_WRITE)
 	{
 		core->memory_access.action_success = cache_write(core->cache, core->memory_access.alu_result, core->memory_access.rdv);
+		printf("data to write %08x to addr %02x\n", core->memory_access.rdv, core->memory_access.alu_result);
 	}
 
 
 	if (!core->memory_access.action_success)
 	{
+		printf("failed!!!!!!!!!!!!\n");
 		// stall the pipeline
 		//core->fetch.stalls = max(1, core->fetch.stalls);
 		core->fetch.stop = 1;
@@ -436,11 +484,12 @@ void core_memory_access(core_t *core)
 		core->execute.do_work = 0;
 		core->memory_access.do_work = 1;
 		core->write_back.do_work = 0;
-		core->write_back.opcode = core->memory_access.opcode;
 	}
 	if (core->memory_access.action_success)
 	{
+		printf("success!!!!!!!!!!!!");
 		core->memory_access.state = MEM_ACCESS_NONE;
+		core->memory_access.do_work = 0;
 	}
 }
 
@@ -450,10 +499,15 @@ void core_write_back(core_t *core)
 	if (!core->write_back.do_work) {
 		return;
 	}
-	printf("core #%d. WB step instruction %08x\n", core->id, core->write_back.instruction);
+	if (core->write_back.opcode == OPCODE_HALT) {
+		core->halted = TRUE;
+	}
+	printf("core #%d. WB step instruction %08x data: %02x r: %d\n", core->id, core->write_back.instruction, core->write_back.mem_data, core->write_back.rd);
 
 	// write back
-	register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data
+	if (core->write_back.opcode != OPCODE_SW) {
+		register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data
+	}
 }
 
 void core_clk(core_t *core)

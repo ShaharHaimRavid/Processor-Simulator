@@ -4,8 +4,6 @@
 
 uint32_t instruction_memory_read(instruction_memory_t *imem, uint32_t addr)
 {
-    //printf("address %d\n", addr);
-    //printf("instruction % 08x\n", imem->instructions[addr]);
     return imem->instructions[addr];
 }
 

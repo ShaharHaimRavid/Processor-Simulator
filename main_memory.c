@@ -65,8 +65,20 @@ void main_memory_load(main_memory_t* mem, FILE* memin)
     // Read lines from the file and populate the data array
     while (i < (1 << 20) && fgets(line, sizeof(line), memin))
     {
+        // Strip any unwanted character
+        line[strcspn(line, "\r\n")] = '\0';
+
+        // Skip empty lines
+        if (line[0] == '\0')
+        {
+            continue;
+        }
+
         mem->data[i] = (uint32_t)strtol(line, NULL, 16);
         i++;
+    }
+    for (i = 0; i < 64; i++) {
+        printf("%08x\n", mem->data[i]);
     }
 }
 void main_memory_save(main_memory_t* mem, FILE* memout)

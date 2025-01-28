@@ -58,6 +58,7 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 			return;
 		
 		c->data[index_of_block][offset] = data;
+		printf("snoop: index of block %d offset %d data %08x\n", index_of_block, offset, data);
 		if (c->pending_addr % 4 == 3) // last word of block
 		{
 			c->pending_addr = 0;
@@ -146,6 +147,7 @@ bool_t cache_read(cache_t* c, uint32_t addr, uint32_t* data)
 	{
 		// data is in cache
 		*data = c->data[index_of_block][offset];
+		printf("index of block %d offset %d\n", index_of_block, offset);
 		return TRUE;
 	}
 
