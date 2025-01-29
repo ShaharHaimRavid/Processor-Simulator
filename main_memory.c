@@ -76,6 +76,7 @@ void main_memory_load(main_memory_t *mem, FILE *memin)
         mem->data[i] = (uint32_t)strtol(line, NULL, 16);
         i++;
     }
+    printf("Main Memory:\n");
     for (i = 0; i < 64; i++)
     {
         printf("%08x\n", mem->data[i]);
@@ -102,10 +103,15 @@ void main_memory_save(main_memory_t *mem, FILE *memout)
     }
 }
 
-bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word data, bool_t *shared)
+bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word data)
 {
-    if (bus->memory->transaction_pending && cmd != BUS_COMMAND_FLUSH)
+    printf("************ new memory action ************ ");
+    printf("id: %d, addr: %08x, cmd: %d, data: %08x\n", id, addr, cmd, data);
+    if (bus->memory->transaction_pending && cmd == BUS_COMMAND_READ)
+    {
+        printf("transaction pending, skipping action\n");
         return FALSE;
+    }
 
     uint8_t find_count = 0;
     for (int i = 0; i < 4; i++)
@@ -114,12 +120,27 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
 
     // Notify the observers
     for (int i = 0; i < 4; i++)
+    {
+        if (cmd == BUS_COMMAND_FLUSH && bus->observers[i].id != bus->transaction_origid)
+            continue;
         bus->observers[i].snoop(id, cmd, addr, data, find_count > 1, bus->observers[i].user_data);
+    }
 
-    if (id == BUS_ORIGID_MAIN_MEMORY || cmd == BUS_COMMAND_READX)
+    if (id == BUS_ORIGID_MAIN_MEMORY)
+    {
+        printf("finished, main memory action\n");
         return TRUE;
+    }
+    if (cmd == BUS_COMMAND_READX)
+    {
+        printf("finished, readx action\n");
+        return TRUE;
+    }
     if (cmd != BUS_COMMAND_READ)
+    {
+        printf("finished, not read action\n");
         return FALSE;
+    }
 
     bus->transaction_origid = id;
     bus->flush_count = 0;
@@ -154,7 +175,8 @@ void main_memory_clk(main_memory_t *mem)
     }
     bool_t shared;
     main_memory_bus_t *bus = (main_memory_bus_t *)mem->bus_data;
-    main_memory_bus_action(bus, BUS_ORIGID_MAIN_MEMORY, mem->pending_addr, BUS_COMMAND_FLUSH, mem->data[mem->pending_addr], &shared);
+    main_memory_bus_action(bus, BUS_ORIGID_MAIN_MEMORY, mem->pending_addr, BUS_COMMAND_FLUSH, mem->data[mem->pending_addr]);
+    printf("$$$$$$$ flushing data from main memory\n");
     mem->pending_addr++;            // increment to next word
     if (mem->pending_addr % 4 == 0) // last word of block
     {

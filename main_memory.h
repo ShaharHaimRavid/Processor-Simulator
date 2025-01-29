@@ -34,7 +34,7 @@ typedef enum
 
 typedef uint32_t bus_addr_t;
 
-typedef void(bus_snoop_cb_t)(bus_origid_t, bus_command_t, bus_addr_t, uint32_t, bool_t *, void *);
+typedef void(bus_snoop_cb_t)(bus_origid_t, bus_command_t, bus_addr_t, uint32_t, bool_t, void *);
 typedef bool_t(bus_find_cb_t)(uint32_t addr, void *);
 
 typedef struct
@@ -69,7 +69,7 @@ typedef struct
 	core_arbitor_t *arbitor;
 } main_memory_bus_t;
 
-bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word data, bool_t *shared);
+bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word data);
 bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data);
 
 void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem, core_arbitor_t *arbitor);
