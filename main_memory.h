@@ -35,6 +35,15 @@ typedef enum
 typedef uint32_t bus_addr_t;
 
 typedef void(bus_snoop_cb_t)(bus_origid_t, bus_command_t, bus_addr_t, uint32_t, bool_t *, void *);
+typedef bool_t(bus_find_cb_t)(uint32_t addr, void *);
+
+typedef struct
+{
+	bus_snoop_cb_t *snoop;
+	bus_find_cb_t *find;
+	void *user_data;
+	bus_origid_t id;
+} bus_observer_t;
 
 typedef struct
 {
@@ -50,8 +59,7 @@ typedef struct
 
 typedef struct
 {
-	bus_snoop_cb_t *observers[4];
-	void *observers_data[4];
+	bus_observer_t observers[4];
 
 	main_memory_t *memory;
 	FILE *bustrace_file;
@@ -70,7 +78,7 @@ void main_memory_free(main_memory_t *mem);				// free memory
 void main_memory_load(main_memory_t *mem, FILE *memin); // load data from file
 void main_memory_save(main_memory_t *mem, FILE *memin); // save data to file
 
-void main_memory_bus_snoop_observe(main_memory_bus_t *bus, bus_origid_t id, bus_snoop_cb_t cb, void *user_data);
+void main_memory_bus_observe(main_memory_bus_t *bus, bus_observer_t obs, void *user_data);
 
 void main_memory_clk(main_memory_t *mem);
 

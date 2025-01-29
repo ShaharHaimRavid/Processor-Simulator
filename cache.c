@@ -8,7 +8,7 @@
 #define ADDRESS_OFFSET(x) (x & 0x3)
 #define CREATE_META_DATA(tag, mesi) (tag | (mesi << 12))
 
-bool_t cache_find(cache_t* c, uint32_t addr, uint8_t* index_of_block)
+bool_t cache_find(cache_t *c, uint32_t addr, uint8_t *index_of_block)
 {
 	addr = addr & 0xFFFFF; // addr is 20 bits
 	uint16_t tag = ADDRESS_TAG(addr);
@@ -19,7 +19,14 @@ bool_t cache_find(cache_t* c, uint32_t addr, uint8_t* index_of_block)
 	return (METADATA_TAG(meta_of_block) == tag && METADATA_MESI(meta_of_block) != MESI_INVALID);
 }
 
-void cache_flush(cache_t* c, uint8_t index_of_block)
+bool_t cache_find_cb(uint32_t addr, void *user_data)
+{
+	cache_t *c = (cache_t *)user_data;
+	uint8_t index_of_block;
+	return cache_find(c, addr, &index_of_block);
+}
+
+void cache_flush(cache_t *c, uint8_t index_of_block)
 {
 	uint16_t tag = METADATA_TAG(c->metadata[index_of_block]);
 	uint16_t index = index_of_block / 4;
@@ -28,9 +35,9 @@ void cache_flush(cache_t* c, uint8_t index_of_block)
 	main_memory_bus_write(c->bus, addr, c->data[index_of_block]);
 }
 
-void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32_t data, bool_t* shared, void* user_data)
+void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32_t data, bool_t shared, void *user_data)
 {
-	cache_t* c = (cache_t*)user_data;
+	cache_t *c = (cache_t *)user_data;
 	if (c->id == origid)
 		return;
 
@@ -41,13 +48,11 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 	uint8_t index_of_block;
 	bool_t found = cache_find(c, addr, &index_of_block);
 
-	*shared |= found; // raise shared bit if found
-
 	if (origid == BUS_ORIGID_MAIN_MEMORY)
 	{
 		if (cmd != BUS_COMMAND_FLUSH || c->pending_addr != addr)
 			return;
-		
+
 		c->data[set][offset] = data;
 		printf("snoop: index of block %d offset %d data %08x\n", index_of_block, offset, data);
 		if (c->pending_addr % 4 == 3) // last word of block
@@ -100,7 +105,7 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 	}
 }
 
-void cache_init(cache_t* c, main_memory_bus_t* bus, int8_t id)
+void cache_init(cache_t *c, main_memory_bus_t *bus, int8_t id)
 {
 	c->read_hit_count = 0;
 	c->read_miss_count = 0;
@@ -120,10 +125,12 @@ void cache_init(cache_t* c, main_memory_bus_t* bus, int8_t id)
 	c->bus = bus;
 	c->id = id;
 	c->pending_addr = 0;
-	main_memory_bus_snoop_observe(bus, c->id, cache_snoop, c);
+
+	bus_observer_t cache_snoop_observer = {cache_snoop, cache_find_cb, c, id};
+	main_memory_bus_observe(bus, cache_snoop_observer, c);
 }
 
-bool_t cache_read(cache_t* c, uint32_t addr, uint32_t* data)
+bool_t cache_read(cache_t *c, uint32_t addr, uint32_t *data)
 {
 	uint8_t index_of_block;
 	bool_t found = cache_find(c, addr, &index_of_block);

@@ -17,10 +17,9 @@ void main_memory_read(main_memory_t *mem, bus_addr_t addr, block *data)
     }
 }
 
-void main_memory_bus_snoop_observe(main_memory_bus_t *bus, bus_origid_t id, bus_snoop_cb_t cb, void *user_data)
+void main_memory_bus_observe(main_memory_bus_t *bus, bus_observer_t obs, void *user_data)
 {
-    bus->observers[id] = cb;
-    bus->observers_data[id] = user_data;
+    bus->observers[obs.id] = obs;
 }
 
 void main_memory_bus_init(main_memory_bus_t *bus, FILE *bustrace, main_memory_t *mem, core_arbitor_t *arbitor)
@@ -106,27 +105,21 @@ void main_memory_save(main_memory_t *mem, FILE *memout)
 bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word data, bool_t *shared)
 {
     if (bus->memory->transaction_pending && cmd != BUS_COMMAND_FLUSH)
-    {
         return FALSE;
-    }
+
+    uint8_t find_count = 0;
+    for (int i = 0; i < 4; i++)
+        if (bus->observers[i].find(addr, bus->observers[i].user_data))
+            find_count++;
 
     // Notify the observers
     for (int i = 0; i < 4; i++)
-    {
-        if (bus->observers[i] != NULL)
-        {
-            bus->observers[i](id, cmd, addr, data, shared, bus->observers_data[i]);
-        }
-    }
+        bus->observers[i].snoop(id, cmd, addr, data, find_count > 1, bus->observers[i].user_data);
 
     if (id == BUS_ORIGID_MAIN_MEMORY || cmd == BUS_COMMAND_READX)
-    {
         return TRUE;
-    }
     if (cmd != BUS_COMMAND_READ)
-    {
         return FALSE;
-    }
 
     bus->transaction_origid = id;
     bus->flush_count = 0;
