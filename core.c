@@ -113,8 +113,6 @@ void core_free(core_t *core)
 
 void core_instruction_fetch(core_t *core)
 {
-	printf("core #%d. FETCH step \n", core->id);
-
 	if (core->halted)
 		return;
 	if (core->fetch.stop) {
@@ -125,6 +123,7 @@ void core_instruction_fetch(core_t *core)
 		core->fetch.stalls--;
 		return;
 	}
+	printf("core #%d. FETCH step \n", core->id);
 	core->fetch.instruction = instruction_memory_read(core->imem, core->fetch.pc);
 	
 	if (core->fetch.delay_slot) {
@@ -159,7 +158,7 @@ uint32_t core_is_data_hazard(core_t *core)
 	00541064 de
 	*/
 	if (core->decode.opcode >= 9 && core->decode.opcode <= 14 || (core->decode.opcode >= 0 && core->decode.opcode <= 8)) {
-		if (core->write_back.opcode == OPCODE_LW || core->write_back.opcode >= 0 && core->write_back.opcode <= 8) {
+		if (core->write_back.opcode == OPCODE_LW || core->write_back.opcode >= 0 && core->write_back.opcode <= 8 && core->write_back.instruction != 0) {
 			if (core->decode.rs == core->write_back.rd || core->decode.rt == core->write_back.rd) {
 				return 1;
 			}
@@ -172,6 +171,7 @@ uint32_t core_is_data_hazard(core_t *core)
 
 	00431001 ex
 	00541064 de
+
 	*/
 
 	if (core->decode.opcode >= 9 && core->decode.opcode <= 14 || (core->decode.opcode >= 0 && core->decode.opcode <= 8)) { //branch or arithmetics
@@ -192,6 +192,7 @@ uint32_t core_is_data_hazard(core_t *core)
 
 	10201011 ex
 	11321001 de
+
 	*/
 	if ((core->decode.opcode >= 0 && core->decode.opcode <= 8) || core->execute.opcode == OPCODE_LW || core->execute.opcode == OPCODE_SW) //branch is already covered
 		if (core->memory_access.opcode == OPCODE_LW) {
@@ -215,11 +216,14 @@ uint32_t core_is_data_hazard(core_t *core)
 	10201011 
 	00221001 
 	11201011 de
+
+	00331001 ex
+	11301000 de
 	*/
 
 	if (core->decode.opcode == OPCODE_SW) {
 		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8)) { // LW or arithmetics
-			if (core->decode.rd == core->memory_access.rd || core->decode.rd == core->memory_access.rd) {
+			if (core->decode.rd == core->memory_access.rd) {
 				return 1;
 			}
 		}
@@ -235,7 +239,7 @@ uint32_t core_is_data_hazard(core_t *core)
 			return 2;
 		}
 
-	if (core->memory_access.opcode == OPCODE_JAL)
+	if (core->write_back.opcode == OPCODE_JAL)
 		if (core->decode.rt == 15 || core->decode.rs == 15) {
 			return 1;
 		}
@@ -263,10 +267,11 @@ void core_instruction_decode(core_t *core)
 	core->decode.opcode = INSTRUCTION_PARSE_BITS(core->decode.instruction, 24, INSTRUCTION_8BIT_MASK);
 	// stall if Read after Write
 	uint32_t num_stalls = core_is_data_hazard(core);
-	if (core->decode.instruction != 0) {
+	if (core->decode.instruction != 0 && core->memory_access.instruction != 0) {
 		if (num_stalls)
 		{
 			//core->fetch.stalls = max(num_stalls, core->fetch.stalls);
+			printf("hazard!!!!!!\n");
 			core->decode.stalls = max(num_stalls, core->decode.stalls);
 			core->fetch.stop = 1;
 			core->execute.do_work = 1;
@@ -490,6 +495,7 @@ void core_memory_access(core_t *core)
 		printf("success!!!!!!!!!!!!\n");
 		core->memory_access.state = MEM_ACCESS_NONE;
 		core->memory_access.do_work = 0;
+		core->execute.do_work = 1;
 	}
 }
 
