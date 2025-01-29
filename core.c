@@ -38,13 +38,63 @@ void core_save(core_t *core)
 	tsram_save(core->cache, core->files->tsram);
 
 	fprintf(core->files->stats, "cycles %llu\n", core->cycles_count);
-	fprintf(core->files->stats, "instructions %llu\n", core->instructions_exe_count);
+	fprintf(core->files->stats, "instructions %u\n", core->write_back.instruction_count);
 	fprintf(core->files->stats, "read_hit %llu\n", core->cache->read_hit_count);
 	fprintf(core->files->stats, "write_hit %llu\n", core->cache->write_hit_count);
 	fprintf(core->files->stats, "read_miss %llu\n", core->cache->read_miss_count);
 	fprintf(core->files->stats, "write_miss %llu\n", core->cache->write_miss_count);
-	fprintf(core->files->stats, "decode_stall %llu\n", core->decode_stall_count);
+	fprintf(core->files->stats, "decode_stall %u\n", core->decode_stall_count);
 	fprintf(core->files->stats, "mem_stall %llu\n", core->mem_stall_count);
+}
+
+void core_trace(core_t* core)
+{
+	// Cycle
+	fprintf(core->files->coretrace, "%d ", core->cycles_count);
+
+	// Fetch
+	fprintf(core->files->coretrace, "%03X ", core->fetch.pc);
+
+	// Decode
+	fprintf(core->files->coretrace, "%03X ", core->decode.pc);
+
+	// Execute
+	if (!core->execute.do_work)
+	{
+		fprintf(core->files->coretrace, "--- ");
+	}
+	else
+	{
+		fprintf(core->files->coretrace, "%03X ", core->execute.pc);
+	}
+
+	// Memory Access
+	if (!core->memory_access.do_work)
+	{
+		fprintf(core->files->coretrace, "--- ");
+	}
+	else
+	{
+		fprintf(core->files->coretrace, "%03X ", core->memory_access.pc);
+	}
+
+	// Write Back
+	if (!core->write_back.do_work)
+	{
+		fprintf(core->files->coretrace, "--- ");
+	}
+	else
+	{
+		fprintf(core->files->coretrace, "%03X ", core->write_back.pc);
+	}
+
+	// Registers
+	for (int i = 2; i < 16; i++)
+	{
+		fprintf(core->files->coretrace, "%08X ", core->registers[i]);
+	}
+	fprintf(core->files->coretrace, "\n");
+
 }
 
 void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_id)
@@ -58,7 +108,6 @@ void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_i
 		core->registers[i] = 0;
 
 	core->cycles_count = 0;
-	core->instructions_exe_count = 0;
 	core->decode_stall_count = 0;
 	core->mem_stall_count = 0;
 
@@ -102,6 +151,7 @@ void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_i
 	core->write_back.mem_data = 0;
 	core->write_back.do_work = 0;
 	core->write_back.opcode = 0;
+	core->write_back.instruction_count = 0;
 
 	instruction_memory_load(core->imem, core->files->imem);
 }
@@ -175,7 +225,7 @@ uint32_t core_is_data_hazard(core_t *core)
 	*/
 
 	if (core->decode.opcode >= 9 && core->decode.opcode <= 14 || (core->decode.opcode >= 0 && core->decode.opcode <= 8)) { //branch or arithmetics
-		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8)) { // LW or arithmetics
+		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8) && core->memory_access.instruction != 0) { // LW or arithmetics
 			if (core->decode.rs == core->memory_access.rd || core->decode.rt == core->memory_access.rd) {
 				return 2;
 			}
@@ -222,7 +272,7 @@ uint32_t core_is_data_hazard(core_t *core)
 	*/
 
 	if (core->decode.opcode == OPCODE_SW) {
-		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8)) { // LW or arithmetics
+		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8) && core->memory_access.instruction != 0) { // LW or arithmetics
 			if (core->decode.rd == core->memory_access.rd) {
 				return 1;
 			}
@@ -267,7 +317,9 @@ void core_instruction_decode(core_t *core)
 	core->decode.opcode = INSTRUCTION_PARSE_BITS(core->decode.instruction, 24, INSTRUCTION_8BIT_MASK);
 	// stall if Read after Write
 	uint32_t num_stalls = core_is_data_hazard(core);
-	if (core->decode.instruction != 0 && core->memory_access.instruction != 0) {
+
+	if (core->decode.instruction != 0) {
+		core->decode_stall_count += num_stalls;
 		if (num_stalls)
 		{
 			//core->fetch.stalls = max(num_stalls, core->fetch.stalls);
@@ -510,6 +562,11 @@ void core_write_back(core_t *core)
 	}
 	printf("core #%d. WB step instruction %08x data: %02x r: %d\n", core->id, core->write_back.instruction, core->write_back.mem_data, core->write_back.rd);
 
+	if (core->write_back.instruction != 0)
+	{
+		core->write_back.instruction_count += 1;
+	}
+
 	// write back
 	if (core->write_back.opcode != OPCODE_SW) {
 		register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data
@@ -520,7 +577,9 @@ void core_clk(core_t *core)
 {
 	if (core->halted)
 		return;
+
 	core->cycles_count++;
+
 	core_write_back(core);
 	core_memory_access(core);
 	core_execute(core);

@@ -98,6 +98,8 @@ typedef struct
 	uint32_t instruction;
 	OPCODES opcode;
 
+	uint32_t instruction_count;
+
 	uint8_t rd;
 	uint32_t mem_data;
 } write_back_state;
@@ -107,7 +109,6 @@ typedef struct
 	uint8_t id;
 
 	uint64_t cycles_count;
-	uint64_t instructions_exe_count;
 	uint64_t decode_stall_count;
 	uint64_t mem_stall_count;
 
@@ -134,6 +135,7 @@ bool_t is_halted(core_t* core);
 
 void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_id);
 void core_save(core_t *core);
+void core_trace(core_t* core);
 void core_free(core_t *core);
 
 void core_instruction_fetch(core_t *core);
