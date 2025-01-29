@@ -150,7 +150,8 @@ bool_t cache_read(cache_t *c, uint32_t addr, uint32_t *data)
 	}
 
 	// no data in cache (or invalid), need to fetch from memory
-	bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READ, 0);
+	bool_t shared;
+	bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READ, 0, &shared);
 	if (ret) // got transaction from round-robin
 		c->pending_addr = BLOCK_ADDR_FROM_BYTE(addr);
 	return FALSE;
@@ -169,8 +170,8 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 
 	if (!found || mesi == MESI_INVALID || mesi == MESI_SHARED)
 	{
-		printf("Calling Readx\n");
-		bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READX, 0);
+		bool_t shared;
+		bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READX, 0, &shared);
 		if (!ret)
 		{
 			return FALSE;
