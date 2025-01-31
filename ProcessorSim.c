@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 
 #include "files.h"
 
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 	// ========================================================
 	//	Simulation
 	// ========================================================
-	int* cored_prioritized;
+	int *cored_prioritized;
 	while (!is_halted(&cores[0]) || !is_halted(&cores[1]) || !is_halted(&cores[2]) || !is_halted(&cores[3]))
 	{
 		// we call the core_clk function for each core in the priorized order

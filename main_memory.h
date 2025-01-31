@@ -34,7 +34,7 @@ typedef enum
 
 typedef uint32_t bus_addr_t;
 
-typedef void(bus_snoop_cb_t)(bus_origid_t, bus_command_t, bus_addr_t, uint32_t, bool_t *, void *);
+typedef void(bus_snoop_cb_t)(bus_origid_t, bus_command_t, bus_addr_t, uint32_t, bool_t, void *);
 typedef bool_t(bus_find_cb_t)(uint32_t addr, void *);
 
 typedef struct
