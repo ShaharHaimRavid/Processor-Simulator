@@ -43,14 +43,14 @@ void core_save(core_t *core)
 	fprintf(core->files->stats, "write_hit %llu\n", core->cache->write_hit_count);
 	fprintf(core->files->stats, "read_miss %llu\n", core->cache->read_miss_count);
 	fprintf(core->files->stats, "write_miss %llu\n", core->cache->write_miss_count);
-	fprintf(core->files->stats, "decode_stall %llu\n", core->decode_stall_count);
+	fprintf(core->files->stats, "decode_stall %u\n", core->decode_stall_count);
 	fprintf(core->files->stats, "mem_stall %llu\n", core->mem_stall_count);
 }
 
-void core_trace(core_t *core)
+void core_trace(core_t* core)
 {
 	// Cycle
-	fprintf(core->files->coretrace, "%llu ", core->cycles_count);
+	fprintf(core->files->coretrace, "%d ", core->cycles_count);
 
 	// Fetch
 	fprintf(core->files->coretrace, "%03X ", core->fetch.pc);
@@ -165,8 +165,7 @@ void core_instruction_fetch(core_t *core)
 {
 	if (core->halted)
 		return;
-	if (core->fetch.stop)
-	{
+	if (core->fetch.stop) {
 		return;
 	}
 	if (core->fetch.stalls)
@@ -534,6 +533,7 @@ void core_memory_access(core_t *core)
 
 	if (!core->memory_access.action_success)
 	{
+		printf("failed!!!!!!!!!!!!\n");
 		// stall the pipeline
 		//core->fetch.stalls = max(1, core->fetch.stalls);
 		core->fetch.stop = 1;
@@ -544,6 +544,7 @@ void core_memory_access(core_t *core)
 	}
 	if (core->memory_access.action_success)
 	{
+		printf("success!!!!!!!!!!!!\n");
 		core->memory_access.state = MEM_ACCESS_NONE;
 		core->memory_access.do_work = 0;
 		core->execute.do_work = 1;
