@@ -76,6 +76,7 @@ void main_memory_load(main_memory_t *mem, FILE *memin)
         mem->data[i] = (uint32_t)strtol(line, NULL, 16);
         i++;
     }
+    printf("Main Memory:\n");
     for (i = 0; i < 64; i++)
     {
         printf("%08x\n", mem->data[i]);
