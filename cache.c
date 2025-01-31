@@ -71,7 +71,6 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 	if (mesi == MESI_INVALID) // shouldn't change MESI state
 		return;
 
-
 	// ========================================
 	// MESI Protocol - handle status of blocks
 	// ========================================
@@ -153,8 +152,7 @@ bool_t cache_read(cache_t *c, uint32_t addr, uint32_t *data)
 	}
 
 	// no data in cache (or invalid), need to fetch from memory
-	bool_t shared;
-	bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READ, 0, &shared);
+	bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READ, 0, 0);
 	if (ret) // got transaction from round-robin
 		c->pending_addr = BLOCK_ADDR_FROM_BYTE(addr);
 	return FALSE;
@@ -173,8 +171,7 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 
 	if (!found || mesi == MESI_INVALID || mesi == MESI_SHARED)
 	{
-		bool_t shared;
-		bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READX, 0, &shared);
+		bool_t ret = main_memory_bus_action(c->bus, c->id, addr, BUS_COMMAND_READX, 0, 0);
 		if (!ret)
 		{
 			return FALSE;

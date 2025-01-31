@@ -8,7 +8,7 @@
 #define INSTRUCTION_12BIT_MASK 0xFFF
 #define INSTRUCTION_PARSE_BITS(instruction, offset, mask) ((instruction >> offset) & mask)
 bool_t is_halted(core_t *core)
-{	
+{
 	return core->halted;
 }
 
@@ -94,7 +94,6 @@ void core_trace(core_t *core)
 		fprintf(core->files->coretrace, "%08X ", core->registers[i]);
 	}
 	fprintf(core->files->coretrace, "\n");
-
 }
 
 void core_init(core_t *core, core_files_t *files, cache_t *cache, uint8_t core_id)
@@ -176,17 +175,19 @@ void core_instruction_fetch(core_t *core)
 	}
 	printf("core #%d. FETCH step \n", core->id);
 	core->fetch.instruction = instruction_memory_read(core->imem, core->fetch.pc);
-	
-	if (core->fetch.delay_slot) {
+
+	if (core->fetch.delay_slot)
+	{
 		core->decode.pc = core->fetch.pc;
 		core->fetch.pc = core->fetch.delay_slot_instruction;
 		core->fetch.delay_slot = 0;
 	}
-	else{
+	else
+	{
 		core->decode.pc = core->fetch.pc;
 		core->fetch.pc++;
 	}
-	
+
 	core->decode.instruction = core->fetch.instruction;
 }
 
@@ -197,9 +198,9 @@ uint32_t core_is_data_hazard(core_t *core)
 	JAL writes to register 15 only, so only if this is rt or rs there is a hazard
 	BEQ, BNE, BLT, BGT, BLE, BGE do not write to any register -> no hazard
 	*/
-	//printf("in core_is_data_hazard op = %02x,rs=%d, rd = %d \n", core->decode.opcode, core->decode.rs, core->write_back.rd);
+	// printf("in core_is_data_hazard op = %02x,rs=%d, rd = %d \n", core->decode.opcode, core->decode.rs, core->write_back.rd);
 
-	/*  
+	/*
 	00331001 mem
 	00000000 ex
 	0B031064 de
@@ -208,9 +209,12 @@ uint32_t core_is_data_hazard(core_t *core)
 	00000000 ex
 	00541064 de
 	*/
-	if (core->decode.opcode >= 9 && core->decode.opcode <= 14 || (core->decode.opcode >= 0 && core->decode.opcode <= 8)) {
-		if (core->write_back.opcode == OPCODE_LW || core->write_back.opcode >= 0 && core->write_back.opcode <= 8 && core->write_back.instruction != 0) {
-			if (core->decode.rs == core->write_back.rd || core->decode.rt == core->write_back.rd) {
+	if (core->decode.opcode >= 9 && core->decode.opcode <= 14 || (core->decode.opcode >= 0 && core->decode.opcode <= 8))
+	{
+		if (core->write_back.opcode == OPCODE_LW || core->write_back.opcode >= 0 && core->write_back.opcode <= 8 && core->write_back.instruction != 0)
+		{
+			if (core->decode.rs == core->write_back.rd || core->decode.rt == core->write_back.rd)
+			{
 				return 1;
 			}
 		}
@@ -225,14 +229,16 @@ uint32_t core_is_data_hazard(core_t *core)
 
 	*/
 
-	if (core->decode.opcode >= 9 && core->decode.opcode <= 14 || (core->decode.opcode >= 0 && core->decode.opcode <= 8)) { //branch or arithmetics
-		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8) && core->memory_access.instruction != 0) { // LW or arithmetics
-			if (core->decode.rs == core->memory_access.rd || core->decode.rt == core->memory_access.rd) {
+	if (core->decode.opcode >= 9 && core->decode.opcode <= 14 || (core->decode.opcode >= 0 && core->decode.opcode <= 8))
+	{ // branch or arithmetics
+		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8) && core->memory_access.instruction != 0)
+		{ // LW or arithmetics
+			if (core->decode.rs == core->memory_access.rd || core->decode.rt == core->memory_access.rd)
+			{
 				return 2;
 			}
 		}
 	}
-
 
 	/*
 	10201011 ex
@@ -245,9 +251,11 @@ uint32_t core_is_data_hazard(core_t *core)
 	11321001 de
 
 	*/
-	if ((core->decode.opcode >= 0 && core->decode.opcode <= 8) || core->execute.opcode == OPCODE_LW || core->execute.opcode == OPCODE_SW) //branch is already covered
-		if (core->memory_access.opcode == OPCODE_LW) {
-			if(core->decode.rs == core->memory_access.rd || core->decode.rt == core->memory_access.rd){
+	if ((core->decode.opcode >= 0 && core->decode.opcode <= 8) || core->execute.opcode == OPCODE_LW || core->execute.opcode == OPCODE_SW) // branch is already covered
+		if (core->memory_access.opcode == OPCODE_LW)
+		{
+			if (core->decode.rs == core->memory_access.rd || core->decode.rt == core->memory_access.rd)
+			{
 				return 2;
 			}
 		}
@@ -258,23 +266,28 @@ uint32_t core_is_data_hazard(core_t *core)
 	00221001 de
 	*/
 	if ((core->decode.opcode >= 0 && core->decode.opcode <= 8) || core->execute.opcode == OPCODE_LW || core->execute.opcode == OPCODE_SW)
-		if (core->write_back.opcode == OPCODE_LW) {
-			if (core->decode.rs == core->write_back.rd || core->decode.rt == core->write_back.rd) {
+		if (core->write_back.opcode == OPCODE_LW)
+		{
+			if (core->decode.rs == core->write_back.rd || core->decode.rt == core->write_back.rd)
+			{
 				return 1;
 			}
 		}
 	/*
-	10201011 
-	00221001 
+	10201011
+	00221001
 	11201011 de
 
 	00331001 ex
 	11301000 de
 	*/
 
-	if (core->decode.opcode == OPCODE_SW) {
-		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8) && core->memory_access.instruction != 0) { // LW or arithmetics
-			if (core->decode.rd == core->memory_access.rd) {
+	if (core->decode.opcode == OPCODE_SW)
+	{
+		if (core->memory_access.opcode == OPCODE_LW || (core->memory_access.opcode >= 0 && core->memory_access.opcode <= 8) && core->memory_access.instruction != 0)
+		{ // LW or arithmetics
+			if (core->decode.rd == core->memory_access.rd)
+			{
 				return 1;
 			}
 		}
@@ -286,21 +299,23 @@ uint32_t core_is_data_hazard(core_t *core)
 	*/
 
 	if (core->execute.opcode == OPCODE_JAL)
-		if (core->decode.rt == 15 || core->decode.rs == 15) {
+		if (core->decode.rt == 15 || core->decode.rs == 15)
+		{
 			return 2;
 		}
 
 	if (core->write_back.opcode == OPCODE_JAL)
-		if (core->decode.rt == 15 || core->decode.rs == 15) {
+		if (core->decode.rt == 15 || core->decode.rs == 15)
+		{
 			return 1;
 		}
 	return 0;
 }
 
-
 void core_instruction_decode(core_t *core)
 {
-	if (core->halted) {
+	if (core->halted)
+	{
 		return;
 	}
 	if (core->decode.stalls)
@@ -319,11 +334,12 @@ void core_instruction_decode(core_t *core)
 	// stall if Read after Write
 	uint32_t num_stalls = core_is_data_hazard(core);
 
-	if (core->decode.instruction != 0) {
+	if (core->decode.instruction != 0)
+	{
 		core->decode_stall_count += num_stalls;
 		if (num_stalls)
 		{
-			//core->fetch.stalls = max(num_stalls, core->fetch.stalls);
+			// core->fetch.stalls = max(num_stalls, core->fetch.stalls);
 			printf("hazard!!!!!!\n");
 			core->decode.stalls = max(num_stalls, core->decode.stalls);
 			core->fetch.stop = 1;
@@ -340,7 +356,6 @@ void core_instruction_decode(core_t *core)
 			return;
 		}
 	}
-
 
 	// write to register 1 the imm value after sign extension
 	register_write(core->registers, 1, (uint32_t)core->decode.imm);
@@ -363,63 +378,69 @@ void core_instruction_decode(core_t *core)
 	if (core->decode.opcode < 9 || core->decode.opcode > 15)
 		return;
 	switch (core->decode.opcode)
+	{
+	case OPCODE_BEQ:
+		if (rtv == rsv)
 		{
-		case OPCODE_BEQ:
-			if (rtv == rsv) {
-				core->fetch.delay_slot = 1;
-				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
-				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
-			}
-			break;
-		case OPCODE_BNE:
-			if (rtv != rsv) {
-				core->fetch.delay_slot = 1;
-				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
-				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
-			}
-			break;
-		case OPCODE_BLT:
-			if (rsv < rtv) {
-				core->fetch.delay_slot = 1;
-				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
-				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
-			}
-			break;
-		case OPCODE_BGT:
-			if (rsv > rtv) {
-				core->fetch.delay_slot = 1;
-				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
-				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
-			}
-			break;
-		case OPCODE_BLE:
-			if (rsv <= rtv) {
-				core->fetch.delay_slot = 1;
-				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
-				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
-			}
-			break;
-		case OPCODE_BGE:
-			if (rsv >= rtv) {
-				core->fetch.delay_slot = 1;
-				core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
-				//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
-			}
-			break;
-		case OPCODE_JAL:
 			core->fetch.delay_slot = 1;
 			core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
-			//core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
-			break;
+			// core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
 		}
-	
+		break;
+	case OPCODE_BNE:
+		if (rtv != rsv)
+		{
+			core->fetch.delay_slot = 1;
+			core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+			// core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+		}
+		break;
+	case OPCODE_BLT:
+		if (rsv < rtv)
+		{
+			core->fetch.delay_slot = 1;
+			core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+			// core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+		}
+		break;
+	case OPCODE_BGT:
+		if (rsv > rtv)
+		{
+			core->fetch.delay_slot = 1;
+			core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+			// core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+		}
+		break;
+	case OPCODE_BLE:
+		if (rsv <= rtv)
+		{
+			core->fetch.delay_slot = 1;
+			core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+			// core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+		}
+		break;
+	case OPCODE_BGE:
+		if (rsv >= rtv)
+		{
+			core->fetch.delay_slot = 1;
+			core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+			// core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+		}
+		break;
+	case OPCODE_JAL:
+		core->fetch.delay_slot = 1;
+		core->fetch.delay_slot_instruction = rdv & INSTRUCTION_10BIT_MASK;
+		// core->fetch.pc = rdv & INSTRUCTION_10BIT_MASK;
+		break;
+	}
 }
 
 void core_execute(core_t *core)
 {
 	if (core->halted)
 		return;
-	if (!core->execute.do_work) {
+	if (!core->execute.do_work)
+	{
 		return;
 	}
 
@@ -476,14 +497,15 @@ void core_execute(core_t *core)
 		core->memory_access.state = MEM_ACCESS_WRITE;
 		break;
 	case OPCODE_HALT:
-		//core->halted = TRUE;
-		//core->memory_access.empty = 1;
-		//core->memory_access.do_work = 0;
-		//core->write_back.do_work = 0;
+		// core->halted = TRUE;
+		// core->memory_access.empty = 1;
+		// core->memory_access.do_work = 0;
+		// core->write_back.do_work = 0;
 		break;
 	}
 
-	if (!core->halted) {
+	if (!core->halted)
+	{
 		core->memory_access.do_work = 1;
 	}
 	core->memory_access.pc = core->execute.pc;
@@ -492,9 +514,9 @@ void core_execute(core_t *core)
 	core->memory_access.rtv = core->execute.rtv;
 	core->memory_access.rd = core->execute.rd;
 	core->memory_access.rdv = core->execute.rdv;
-	//core->memory_access.state = MEM_ACCESS_NONE;
-	//if (!core->halted) {
-		//core->memory_access.do_work = 1;
+	// core->memory_access.state = MEM_ACCESS_NONE;
+	// if (!core->halted) {
+	// core->memory_access.do_work = 1;
 	//}
 	core->memory_access.do_work = 1;
 	core->memory_access.alu_result = core->execute.alu_result;
@@ -502,7 +524,8 @@ void core_execute(core_t *core)
 
 void core_memory_access(core_t *core)
 {
-	if (!core->memory_access.do_work) {
+	if (!core->memory_access.do_work)
+	{
 		return;
 	}
 	printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
@@ -515,7 +538,8 @@ void core_memory_access(core_t *core)
 	core->write_back.do_work = 1;
 	core->write_back.opcode = core->memory_access.opcode;
 
-	if (core->memory_access.state == MEM_ACCESS_NONE) {
+	if (core->memory_access.state == MEM_ACCESS_NONE)
+	{
 		return;
 	}
 
@@ -531,11 +555,10 @@ void core_memory_access(core_t *core)
 		printf("data to write %08x to addr %02x\n", core->memory_access.rdv, core->memory_access.alu_result);
 	}
 
-
 	if (!core->memory_access.action_success)
 	{
 		// stall the pipeline
-		//core->fetch.stalls = max(1, core->fetch.stalls);
+		// core->fetch.stalls = max(1, core->fetch.stalls);
 		core->fetch.stop = 1;
 		core->decode.stalls = max(1, core->decode.stalls);
 		core->execute.do_work = 0;
@@ -553,10 +576,12 @@ void core_memory_access(core_t *core)
 void core_write_back(core_t *core)
 {
 
-	if (!core->write_back.do_work) {
+	if (!core->write_back.do_work)
+	{
 		return;
 	}
-	if (core->write_back.opcode == OPCODE_HALT) {
+	if (core->write_back.opcode == OPCODE_HALT)
+	{
 		core->halted = TRUE;
 	}
 	printf("core #%d. WB step instruction %08x data: %02x r: %d\n", core->id, core->write_back.instruction, core->write_back.mem_data, core->write_back.rd);
@@ -567,7 +592,8 @@ void core_write_back(core_t *core)
 	}
 
 	// write back
-	if (core->write_back.opcode != OPCODE_SW) {
+	if (core->write_back.opcode != OPCODE_SW)
+	{
 		register_write(core->registers, core->write_back.rd, core->write_back.mem_data); // mem data can be either ALU result or memory data
 	}
 }
