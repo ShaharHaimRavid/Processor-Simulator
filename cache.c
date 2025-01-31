@@ -179,7 +179,7 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 	}
 
 	c->data[index_of_block][offset] = data;
-	c->metadata[index_of_block] = tag | MESI_MODIFIED << 12;
+	c->metadata[index_of_block] = CREATE_META_DATA(tag, MESI_MODIFIED);
 	return TRUE;
 }
 

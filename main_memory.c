@@ -105,13 +105,14 @@ void main_memory_save(main_memory_t *mem, FILE *memout)
 
 bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_t addr, bus_command_t cmd, word data, bool_t shared)
 {
-    printf("************ new memory action ************ ");
-    printf("id: %d, addr: %08x, cmd: %d, data: %08x\n", id, addr, cmd, data);
     if (bus->memory->transaction_pending && cmd != BUS_COMMAND_FLUSH)
     {
         printf("transaction pending, skipping action\n");
         return FALSE;
     }
+
+    printf("************ new memory transaction ************ ");
+    printf("id: %d, addr: %08x, cmd: %d, data: %08x\n", id, addr, cmd, data);
 
     for (int i = 0; i < 4; i++)
     {
@@ -182,6 +183,7 @@ void main_memory_clk(main_memory_t *mem)
     mem->pending_addr++;            // increment to next word
     if (mem->pending_addr % 4 == 0) // last word of block
     {
+        printf("$$$$$$$ last word of block, transaction finished\n");
         mem->transaction_pending = FALSE;
         arbitor_on_transaction_end(bus->arbitor);
     }
