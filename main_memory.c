@@ -109,12 +109,16 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
 
     uint8_t find_count = 0;
     for (int i = 0; i < 4; i++)
+    {
+        if (i == id)
+            continue;
         if (bus->observers[i].find(addr, bus->observers[i].user_data))
             find_count++;
+    }
 
     // Notify the observers
     for (int i = 0; i < 4; i++)
-        bus->observers[i].snoop(id, cmd, addr, data, find_count > 1, bus->observers[i].user_data);
+        bus->observers[i].snoop(id, cmd, addr, data, find_count, bus->observers[i].user_data);
 
     if (id == BUS_ORIGID_MAIN_MEMORY || cmd == BUS_COMMAND_READX)
         return TRUE;

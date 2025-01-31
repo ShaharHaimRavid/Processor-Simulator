@@ -68,6 +68,9 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 		return;
 
 	MESI mesi = METADATA_MESI(c->metadata[index_of_block]);
+	if (mesi == MESI_INVALID) // shouldn't change MESI state
+		return;
+
 
 	// ========================================
 	// MESI Protocol - handle status of blocks
