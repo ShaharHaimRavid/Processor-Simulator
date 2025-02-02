@@ -3,6 +3,7 @@
 void main_memory_write(main_memory_t *mem, bus_addr_t addr, block data)
 {
     // Copy the data from the block to the memory
+    printf("bus: addr %04x, data %02x\n", addr, data);
     for (int i = 0; i < 4; i++)
     {
         mem->data[addr + i] = data[i];
@@ -87,6 +88,11 @@ void main_memory_save(main_memory_t *mem, FILE *memout)
     // Start from the first line and go up to the last non-zero line
     uint32_t last_non_zero = 0;
 
+    for (uint32_t i = 8000; i < 8230 ; i++)
+    {
+        printf("%08x\n", mem->data[i]);
+    }
+
     // Find the last non-zero index
     for (uint32_t i = 0; i < (1 << 20); i++)
     {
@@ -107,12 +113,12 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
 {
     if (bus->memory->transaction_pending && cmd != BUS_COMMAND_FLUSH)
     {
-        printf("transaction pending, skipping action\n");
+        //printf("transaction pending, skipping action\n");
         return FALSE;
     }
 
-    printf("************ new memory transaction ************ ");
-    printf("id: %d, addr: %08x, cmd: %d, data: %08x\n", id, addr, cmd, data);
+    //printf("************ new memory transaction ************ ");
+    //printf("id: %d, addr: %08x, cmd: %d, data: %08x\n", id, addr, cmd, data);
 
     for (int i = 0; i < 4; i++)
     {
@@ -132,17 +138,17 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
 
     if (id == BUS_ORIGID_MAIN_MEMORY)
     {
-        printf("finished, main memory action\n");
+        //printf("finished, main memory action\n");
         return TRUE;
     }
     if (cmd == BUS_COMMAND_READX)
     {
-        printf("finished, readx action\n");
+        //printf("finished, readx action\n");
         return TRUE;
     }
     if (cmd != BUS_COMMAND_READ)
     {
-        printf("finished, not read action\n");
+        //printf("finished, not read action\n");
         return FALSE;
     }
 
@@ -160,6 +166,7 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
 
 bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data)
 {
+    printf("main_mem: addr %04x, data %02x\n", addr, data);
     main_memory_write(bus->memory, addr, data);
     return TRUE;
 }
@@ -179,11 +186,11 @@ void main_memory_clk(main_memory_t *mem)
     }
     main_memory_bus_t *bus = (main_memory_bus_t *)mem->bus_data;
     main_memory_bus_action(bus, BUS_ORIGID_MAIN_MEMORY, mem->pending_addr, BUS_COMMAND_FLUSH, mem->data[mem->pending_addr], 0);
-    printf("$$$$$$$ flushing data from main memory\n");
+    //printf("$$$$$$$ flushing data from main memory\n");
     mem->pending_addr++;            // increment to next word
     if (mem->pending_addr % 4 == 0) // last word of block
     {
-        printf("$$$$$$$ last word of block, transaction finished\n");
+        //printf("$$$$$$$ last word of block, transaction finished\n");
         mem->transaction_pending = FALSE;
         arbitor_on_transaction_end(bus->arbitor);
     }

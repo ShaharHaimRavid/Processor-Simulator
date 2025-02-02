@@ -557,6 +557,7 @@ void core_memory_access(core_t *core)
 
 	if (!core->memory_access.action_success)
 	{
+		printf("fail!!!!\n");
 		// stall the pipeline
 		// core->fetch.stalls = max(1, core->fetch.stalls);
 		core->fetch.stop = 1;
@@ -567,6 +568,7 @@ void core_memory_access(core_t *core)
 	}
 	if (core->memory_access.action_success)
 	{
+		printf("success!!!!\n");
 		core->memory_access.state = MEM_ACCESS_NONE;
 		core->memory_access.do_work = 0;
 		core->execute.do_work = 1;

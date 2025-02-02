@@ -32,6 +32,7 @@ void cache_flush(cache_t *c, uint8_t index_of_block)
 	uint16_t index = index_of_block / 4;
 	uint16_t addr = (tag << 8) | (index << 4) | 0x0;
 
+	printf("cache: addr %04x, data %02x\n", addr, c->data[index_of_block]);
 	main_memory_bus_write(c->bus, addr, c->data[index_of_block]);
 }
 
@@ -54,7 +55,7 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 			return;
 
 		c->data[set][offset] = data;
-		printf("snoop: index of block %d offset %d data %08x\n", index_of_block, offset, data);
+		//printf("snoop: index of block %d offset %d data %08x\n", index_of_block, offset, data);
 		if (c->pending_addr % 4 == 3) // last word of block
 		{
 			c->pending_addr = 0;
@@ -147,7 +148,7 @@ bool_t cache_read(cache_t *c, uint32_t addr, uint32_t *data)
 	{
 		// data is in cache
 		*data = c->data[index_of_block][offset];
-		printf("index of block %d offset %d\n", index_of_block, offset);
+		//printf("index of block %d offset %d\n", index_of_block, offset);
 		return TRUE;
 	}
 

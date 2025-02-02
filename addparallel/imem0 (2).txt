@@ -1,0 +1,31 @@
+00201FFF #addi R2, R1, 4095 loop counter
+00401FFF #Load base address 4095 of vector B into R4
+00401001 #4095+1 vector 2 address
+00544000 #result address to R5=4095
+10600000 #Load an element from vector A into R6
+10740000 #Load an element from vector B into R7
+00876000 #Add the values from R7 and R6, store the result in R8.
+11850000 #Store the result in vector C at the current address.
+00301001 #Increment the address for vector A.
+00401001 #Increment the address for vector B
+00501001 #Increment the address for vector C
+0B492000 #bne 
+00901001 #Decrement the loop counter.
+14000000 #halt
+
+002103FF #loop counter 1023
+00401FFF #base address vector 2
+00441001 
+00544000 #base address result
+10630000 #load vector 1
+10740000 #load vector 2
+00876000 #add them
+11850000 #store result 
+00331001
+00441001
+00551001
+0B192004
+00991001
+14000000
+14000000
+14000000

@@ -1,0 +1,7 @@
+0020107F #add R2, R1, 127 - Load 127 into R2 (loop counter)
+10301000 #lw R3, 0(R3)- Load the value at address 0 into R4
+00331001 #add R3, R3, R1, imm=1 - Increment the value in R4 by 1.
+11301000 #sw R3, 0(R1) - Store the incremented value back to memory at address 0.
+0B152001 #blt R1, R5, R2 - if R5 < 128 jump to 1
+00551001 #add R5, R5, R1,  imm=1 -Decrement the loop counter.
+14000000 #halt
