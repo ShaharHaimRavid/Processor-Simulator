@@ -13,33 +13,33 @@
 
 static void parse_args(int argc, char *argv[], core_files_t *core_files, mem_files_t *mem_files)
 {
-	core_files[0].imem_path = GET_ARG(argc, argv, 1, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\imem0.txt");
-	core_files[1].imem_path = GET_ARG(argc, argv, 2, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\imem1.txt");
-	core_files[2].imem_path = GET_ARG(argc, argv, 3, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\imem2.txt");
-	core_files[3].imem_path = GET_ARG(argc, argv, 4, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\imem3.txt");
-	mem_files->memin_path = GET_ARG(argc, argv, 5, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\memin.txt");
-	mem_files->memout_path = GET_ARG(argc, argv, 6, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\memout.txt");
-	core_files[0].regout_path = GET_ARG(argc, argv, 7, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\regout0.txt");
-	core_files[1].regout_path = GET_ARG(argc, argv, 8, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\regout1.txt");
-	core_files[2].regout_path = GET_ARG(argc, argv, 9, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\regout2.txt");
-	core_files[3].regout_path = GET_ARG(argc, argv, 10, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\regout3.txt");
-	core_files[0].coretrace_path = GET_ARG(argc, argv, 11, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\core0trace.txt");
-	core_files[1].coretrace_path = GET_ARG(argc, argv, 12, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\core1trace.txt");
-	core_files[2].coretrace_path = GET_ARG(argc, argv, 13, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\core2trace.txt");
-	core_files[3].coretrace_path = GET_ARG(argc, argv, 14, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\core3trace.txt");
-	mem_files->bustrace_path = GET_ARG(argc, argv, 15, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\bustrace.txt");
-	core_files[0].dsram_path = GET_ARG(argc, argv, 16, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\dsram0.txt");
-	core_files[1].dsram_path = GET_ARG(argc, argv, 17, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\dsram1.txt");
-	core_files[2].dsram_path = GET_ARG(argc, argv, 18, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\dsram2.txt");
-	core_files[3].dsram_path = GET_ARG(argc, argv, 19, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\dsram3.txt");
-	core_files[0].tsram_path = GET_ARG(argc, argv, 20, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\tsram0.txt");
-	core_files[1].tsram_path = GET_ARG(argc, argv, 21, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\tsram1.txt");
-	core_files[2].tsram_path = GET_ARG(argc, argv, 22, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\tsram2.txt");
-	core_files[3].tsram_path = GET_ARG(argc, argv, 23, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\tsram3.txt");
-	core_files[0].stats_path = GET_ARG(argc, argv, 24, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\stats0.txt");
-	core_files[1].stats_path = GET_ARG(argc, argv, 25, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\stats1.txt");
-	core_files[2].stats_path = GET_ARG(argc, argv, 26, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\stats2.txt");
-	core_files[3].stats_path = GET_ARG(argc, argv, 27, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addparallel\\stats3.txt");
+	core_files[0].imem_path = GET_ARG(argc, argv, 1, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\imem0.txt");
+	core_files[1].imem_path = GET_ARG(argc, argv, 2, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\imem1.txt");
+	core_files[2].imem_path = GET_ARG(argc, argv, 3, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\imem2.txt");
+	core_files[3].imem_path = GET_ARG(argc, argv, 4, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\imem3.txt");
+	mem_files->memin_path = GET_ARG(argc, argv, 5, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\memin.txt");
+	mem_files->memout_path = GET_ARG(argc, argv, 6, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\memout.txt");
+	core_files[0].regout_path = GET_ARG(argc, argv, 7, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\regout0.txt");
+	core_files[1].regout_path = GET_ARG(argc, argv, 8, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\regout1.txt");
+	core_files[2].regout_path = GET_ARG(argc, argv, 9, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\regout2.txt");
+	core_files[3].regout_path = GET_ARG(argc, argv, 10, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\regout3.txt");
+	core_files[0].coretrace_path = GET_ARG(argc, argv, 11, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\core0trace.txt");
+	core_files[1].coretrace_path = GET_ARG(argc, argv, 12, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\core1trace.txt");
+	core_files[2].coretrace_path = GET_ARG(argc, argv, 13, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\core2trace.txt");
+	core_files[3].coretrace_path = GET_ARG(argc, argv, 14, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\core3trace.txt");
+	mem_files->bustrace_path = GET_ARG(argc, argv, 15, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\bustrace.txt");
+	core_files[0].dsram_path = GET_ARG(argc, argv, 16, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\dsram0.txt");
+	core_files[1].dsram_path = GET_ARG(argc, argv, 17, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\dsram1.txt");
+	core_files[2].dsram_path = GET_ARG(argc, argv, 18, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\dsram2.txt");
+	core_files[3].dsram_path = GET_ARG(argc, argv, 19, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\dsram3.txt");
+	core_files[0].tsram_path = GET_ARG(argc, argv, 20, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\tsram0.txt");
+	core_files[1].tsram_path = GET_ARG(argc, argv, 21, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\tsram1.txt");
+	core_files[2].tsram_path = GET_ARG(argc, argv, 22, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\tsram2.txt");
+	core_files[3].tsram_path = GET_ARG(argc, argv, 23, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\tsram3.txt");
+	core_files[0].stats_path = GET_ARG(argc, argv, 24, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\stats0.txt");
+	core_files[1].stats_path = GET_ARG(argc, argv, 25, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\stats1.txt");
+	core_files[2].stats_path = GET_ARG(argc, argv, 26, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\stats2.txt");
+	core_files[3].stats_path = GET_ARG(argc, argv, 27, "G:\\My Drive\\B.Sc. EE-CS\\Computer Architecture\\ProcessorSim\\ProcessorSim\\addserial\\stats3.txt");
 }
 
 int main(int argc, char *argv[])

@@ -31,8 +31,9 @@ void cache_flush(cache_t* c, uint8_t index_of_block)
 	uint16_t tag = METADATA_TAG(c->metadata[index_of_block]);
 	uint16_t index = index_of_block / 4;
 	uint16_t addr = (tag << 8) | (index << 4) | 0x0;
-
+	printf("flushing %x,%x,%x,%x  to %x\n", c->data[index_of_block][0], c->data[index_of_block][1], c->data[index_of_block][2], c->data[index_of_block][3], addr);
 	main_memory_bus_write(c->bus, addr, c->data[index_of_block]);
+	c->metadata[index_of_block] = CREATE_META_DATA(tag, MESI_EXCLUSIVE);
 }
 
 void cache_flush_all(cache_t* c)
@@ -63,6 +64,11 @@ void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32
 	{
 		if (cmd != BUS_COMMAND_FLUSH || c->pending_addr != addr)
 			return;
+
+		if (METADATA_MESI(c->metadata[index_of_block]) == MESI_MODIFIED && tag != METADATA_TAG(c->metadata[index_of_block]))
+		{
+			cache_flush(c, index_of_block);
+		}
 
 		c->data[set][offset] = data;
 		//printf("snoop: index of block %d offset %d data %08x\n", index_of_block, offset, data);
@@ -178,7 +184,12 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 	uint16_t set = ADDRESS_INDEX(addr);
 	uint16_t offset = ADDRESS_OFFSET(addr);
 
-	MESI mesi = METADATA_MESI(c->metadata[index_of_block]);
+	MESI mesi = METADATA_MESI(c->metadata[set]);
+
+	if (mesi == MESI_MODIFIED && METADATA_TAG(c->metadata[set]) != tag)
+	{
+		cache_flush(c, set);
+	}
 
 	if (!found || mesi == MESI_INVALID || mesi == MESI_SHARED)
 	{
@@ -189,11 +200,7 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 		}
 	}
 
-	if (mesi == MESI_SHARED)
-	{
-		cache_flush(c, index_of_block);
-	}
-
+	printf("writing %x to %x\n", data, addr);
 	c->data[index_of_block][offset] = data;
 	c->metadata[index_of_block] = CREATE_META_DATA(tag, MESI_MODIFIED);
 	return TRUE;

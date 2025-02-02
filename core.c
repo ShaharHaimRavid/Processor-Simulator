@@ -623,7 +623,7 @@ void core_clk(core_t *core)
 {
 	if (core->halted)
 		return;
-	printf("core%d_clk\n", core->id);
+
 	core->cycles_count++;
 
 	core_write_back(core);
