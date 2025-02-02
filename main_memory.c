@@ -135,16 +135,16 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
         //printf("finished, main memory action\n");
         return TRUE;
     }
-    if (cmd == BUS_COMMAND_READX)
-    {
-        //printf("finished, readx action\n");
-        return TRUE;
-    }
-    if (cmd != BUS_COMMAND_READ)
+    if (cmd != BUS_COMMAND_READ && cmd != BUS_COMMAND_READX)
     {
         //printf("finished, not read action\n");
         return FALSE;
     }
+    if (data == 1)
+	{
+		//printf("finished, data is 1\n");
+		return TRUE;
+	}
 
     bus->transaction_origid = id;
     bus->flush_count = 0;
