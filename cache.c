@@ -46,7 +46,6 @@ void cache_flush_all(cache_t* c)
 	}
 }
 
-
 void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32_t data, bool_t shared, void *user_data)
 {
 	cache_t *c = (cache_t *)user_data;
@@ -188,6 +187,11 @@ bool_t cache_write(cache_t *c, uint32_t addr, uint32_t data)
 		{
 			return FALSE;
 		}
+	}
+
+	if (mesi == MESI_SHARED)
+	{
+		cache_flush(c, index_of_block);
 	}
 
 	c->data[index_of_block][offset] = data;
