@@ -26,7 +26,7 @@ bool_t cache_find_cb(uint32_t addr, void *user_data)
 	return cache_find(c, addr, &index_of_block);
 }
 
-void cache_flush(cache_t *c, uint8_t index_of_block)
+void cache_flush(cache_t* c, uint8_t index_of_block)
 {
 	uint16_t tag = METADATA_TAG(c->metadata[index_of_block]);
 	uint16_t index = index_of_block / 4;
@@ -34,6 +34,18 @@ void cache_flush(cache_t *c, uint8_t index_of_block)
 
 	main_memory_bus_write(c->bus, addr, c->data[index_of_block]);
 }
+
+void cache_flush_all(cache_t* c)
+{
+	for (int i = 0; i < 64; i++)
+	{
+		if (METADATA_MESI(c->metadata[i]) == MESI_MODIFIED)
+		{
+			cache_flush(c, i);
+		}
+	}
+}
+
 
 void cache_snoop(bus_origid_t origid, bus_command_t cmd, bus_addr_t addr, uint32_t data, bool_t shared, void *user_data)
 {

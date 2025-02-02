@@ -34,20 +34,21 @@ void core_save(core_t *core)
 		fprintf(core->files->regout, "%08X\n", core->registers[i]);
 	}
 
+	cache_flush_all(core->cache);
 	dsram_save(core->cache, core->files->dsram);
 	tsram_save(core->cache, core->files->tsram);
 
 	fprintf(core->files->stats, "cycles %llu\n", core->cycles_count);
 	fprintf(core->files->stats, "instructions %u\n", core->write_back.instruction_count);
-	uint32_t read_hit = core->cache->read_hit_count;
-	uint32_t read_miss = core->cache->read_miss_count / 20;
-	uint32_t result = (read_hit > read_miss) ? (read_hit - read_miss) : 0;
-	fprintf(core->files->stats, "read_hit %u\n", result);
+	uint64_t read_hit = core->cache->read_hit_count;
+	uint64_t read_miss = core->cache->read_miss_count / 20;
+	uint64_t result = (read_hit > read_miss) ? (read_hit - read_miss) : 0;
+	fprintf(core->files->stats, "read_hit %llu\n", result);
 	//fprintf(core->files->stats, "read_hit %d\n", core->cache->read_hit_count - core->cache->read_miss_count/20);
-	uint32_t write_hit = core->cache->write_hit_count;
-	uint32_t write_miss = core->cache->write_miss_count / 20;
-	uint32_t resultw = (write_hit > write_miss) ? (write_hit - write_miss) : 0;
-	fprintf(core->files->stats, "write_hit %d\n", resultw);
+	uint64_t write_hit = core->cache->write_hit_count;
+	uint64_t write_miss = core->cache->write_miss_count / 20;
+	uint64_t resultw = (write_hit > write_miss) ? (write_hit - write_miss) : 0;
+	fprintf(core->files->stats, "write_hit %llu\n", resultw);
 	fprintf(core->files->stats, "read_miss %llu\n", core->cache->read_miss_count/20);
 	fprintf(core->files->stats, "write_miss %llu\n", core->cache->write_miss_count);
 	fprintf(core->files->stats, "decode_stall %llu\n", core->decode_stall_count);
@@ -622,7 +623,7 @@ void core_clk(core_t *core)
 {
 	if (core->halted)
 		return;
-
+	printf("core%d_clk\n", core->id);
 	core->cycles_count++;
 
 	core_write_back(core);
