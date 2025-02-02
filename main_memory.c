@@ -3,7 +3,6 @@
 void main_memory_write(main_memory_t *mem, bus_addr_t addr, block data)
 {
     // Copy the data from the block to the memory
-    printf("bus: addr %04x, data %02x\n", addr, data);
     for (int i = 0; i < 4; i++)
     {
         mem->data[addr + i] = data[i];
@@ -77,21 +76,16 @@ void main_memory_load(main_memory_t *mem, FILE *memin)
         mem->data[i] = (uint32_t)strtol(line, NULL, 16);
         i++;
     }
-    printf("Main Memory:\n");
-    for (i = 0; i < 64; i++)
-    {
-        printf("%08x\n", mem->data[i]);
-    }
+    //printf("Main Memory:\n");
+    //for (i = 0; i < 64; i++)
+    //{
+    //    printf("%08x\n", mem->data[i]);
+    //}
 }
 void main_memory_save(main_memory_t *mem, FILE *memout)
 {
     // Start from the first line and go up to the last non-zero line
     uint32_t last_non_zero = 0;
-
-    for (uint32_t i = 8000; i < 8230 ; i++)
-    {
-        printf("%08x\n", mem->data[i]);
-    }
 
     // Find the last non-zero index
     for (uint32_t i = 0; i < (1 << 20); i++)
@@ -166,7 +160,6 @@ bool_t main_memory_bus_action(main_memory_bus_t *bus, bus_origid_t id, bus_addr_
 
 bool_t main_memory_bus_write(main_memory_bus_t *bus, bus_addr_t addr, block data)
 {
-    printf("main_mem: addr %04x, data %02x\n", addr, data);
     main_memory_write(bus->memory, addr, data);
     return TRUE;
 }
@@ -180,7 +173,7 @@ void main_memory_clk(main_memory_t *mem)
 
     if (mem->latency_cycles > 0)
     {
-        printf("mem->latency_cycles %d\n", mem->latency_cycles);
+        //printf("mem->latency_cycles %d\n", mem->latency_cycles);
         mem->latency_cycles--;
         return;
     }

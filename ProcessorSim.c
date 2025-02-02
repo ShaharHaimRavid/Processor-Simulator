@@ -13,33 +13,33 @@
 
 static void parse_args(int argc, char *argv[], core_files_t *core_files, mem_files_t *mem_files)
 {
-	core_files[0].imem_path = GET_ARG(argc, argv, 1, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\imem0.txt");
-	core_files[1].imem_path = GET_ARG(argc, argv, 2, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\imem1.txt");
-	core_files[2].imem_path = GET_ARG(argc, argv, 3, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\imem2.txt");
-	core_files[3].imem_path = GET_ARG(argc, argv, 4, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\imem3.txt");
-	mem_files->memin_path = GET_ARG(argc, argv, 5, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\memin.txt");
-	mem_files->memout_path = GET_ARG(argc, argv, 6, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\memout.txt");
-	core_files[0].regout_path = GET_ARG(argc, argv, 7, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\regout0.txt");
-	core_files[1].regout_path = GET_ARG(argc, argv, 8, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\regout1.txt");
-	core_files[2].regout_path = GET_ARG(argc, argv, 9, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\regout2.txt");
-	core_files[3].regout_path = GET_ARG(argc, argv, 10, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\regout3.txt");
-	core_files[0].coretrace_path = GET_ARG(argc, argv, 11, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\core0trace.txt");
-	core_files[1].coretrace_path = GET_ARG(argc, argv, 12, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\core1trace.txt");
-	core_files[2].coretrace_path = GET_ARG(argc, argv, 13, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\core2trace.txt");
-	core_files[3].coretrace_path = GET_ARG(argc, argv, 14, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\core3trace.txt");
-	mem_files->bustrace_path = GET_ARG(argc, argv, 15, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\bustrace.txt");
-	core_files[0].dsram_path = GET_ARG(argc, argv, 16, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\dsram0.txt");
-	core_files[1].dsram_path = GET_ARG(argc, argv, 17, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\dsram1.txt");
-	core_files[2].dsram_path = GET_ARG(argc, argv, 18, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\dsram2.txt");
-	core_files[3].dsram_path = GET_ARG(argc, argv, 19, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\dsram3.txt");
-	core_files[0].tsram_path = GET_ARG(argc, argv, 20, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\tsram0.txt");
-	core_files[1].tsram_path = GET_ARG(argc, argv, 21, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\tsram1.txt");
-	core_files[2].tsram_path = GET_ARG(argc, argv, 22, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\tsram2.txt");
-	core_files[3].tsram_path = GET_ARG(argc, argv, 23, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\tsram3.txt");
-	core_files[0].stats_path = GET_ARG(argc, argv, 24, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\stats0.txt");
-	core_files[1].stats_path = GET_ARG(argc, argv, 25, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\stats1.txt");
-	core_files[2].stats_path = GET_ARG(argc, argv, 26, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\stats2.txt");
-	core_files[3].stats_path = GET_ARG(argc, argv, 27, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\assemblyInstractions\\program3\\stats3.txt");
+	core_files[0].imem_path = GET_ARG(argc, argv, 1, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\imem0.txt");
+	core_files[1].imem_path = GET_ARG(argc, argv, 2, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\imem1.txt");
+	core_files[2].imem_path = GET_ARG(argc, argv, 3, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\imem2.txt");
+	core_files[3].imem_path = GET_ARG(argc, argv, 4, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\imem3.txt");
+	mem_files->memin_path = GET_ARG(argc, argv, 5, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\memin.txt");
+	mem_files->memout_path = GET_ARG(argc, argv, 6, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\memout.txt");
+	core_files[0].regout_path = GET_ARG(argc, argv, 7, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\regout0.txt");
+	core_files[1].regout_path = GET_ARG(argc, argv, 8, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\regout1.txt");
+	core_files[2].regout_path = GET_ARG(argc, argv, 9, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\regout2.txt");
+	core_files[3].regout_path = GET_ARG(argc, argv, 10, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\regout3.txt");
+	core_files[0].coretrace_path = GET_ARG(argc, argv, 11, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\core0trace.txt");
+	core_files[1].coretrace_path = GET_ARG(argc, argv, 12, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\core1trace.txt");
+	core_files[2].coretrace_path = GET_ARG(argc, argv, 13, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\core2trace.txt");
+	core_files[3].coretrace_path = GET_ARG(argc, argv, 14, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\core3trace.txt");
+	mem_files->bustrace_path = GET_ARG(argc, argv, 15, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\bustrace.txt");
+	core_files[0].dsram_path = GET_ARG(argc, argv, 16, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\dsram0.txt");
+	core_files[1].dsram_path = GET_ARG(argc, argv, 17, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\dsram1.txt");
+	core_files[2].dsram_path = GET_ARG(argc, argv, 18, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\dsram2.txt");
+	core_files[3].dsram_path = GET_ARG(argc, argv, 19, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\dsram3.txt");
+	core_files[0].tsram_path = GET_ARG(argc, argv, 20, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\tsram0.txt");
+	core_files[1].tsram_path = GET_ARG(argc, argv, 21, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\tsram1.txt");
+	core_files[2].tsram_path = GET_ARG(argc, argv, 22, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\tsram2.txt");
+	core_files[3].tsram_path = GET_ARG(argc, argv, 23, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\tsram3.txt");
+	core_files[0].stats_path = GET_ARG(argc, argv, 24, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\stats0.txt");
+	core_files[1].stats_path = GET_ARG(argc, argv, 25, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\stats1.txt");
+	core_files[2].stats_path = GET_ARG(argc, argv, 26, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\stats2.txt");
+	core_files[3].stats_path = GET_ARG(argc, argv, 27, "C:\\Users\\shaha\\OneDrive\\מסמכים\\ProcessorProject\\ProcessorSim\\addserial\\stats3.txt");
 }
 
 int main(int argc, char *argv[])

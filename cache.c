@@ -32,7 +32,6 @@ void cache_flush(cache_t *c, uint8_t index_of_block)
 	uint16_t index = index_of_block / 4;
 	uint16_t addr = (tag << 8) | (index << 4) | 0x0;
 
-	printf("cache: addr %04x, data %02x\n", addr, c->data[index_of_block]);
 	main_memory_bus_write(c->bus, addr, c->data[index_of_block]);
 }
 

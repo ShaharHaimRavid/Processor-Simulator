@@ -39,9 +39,16 @@ void core_save(core_t *core)
 
 	fprintf(core->files->stats, "cycles %llu\n", core->cycles_count);
 	fprintf(core->files->stats, "instructions %u\n", core->write_back.instruction_count);
-	fprintf(core->files->stats, "read_hit %llu\n", core->cache->read_hit_count);
-	fprintf(core->files->stats, "write_hit %llu\n", core->cache->write_hit_count);
-	fprintf(core->files->stats, "read_miss %llu\n", core->cache->read_miss_count);
+	uint32_t read_hit = core->cache->read_hit_count;
+	uint32_t read_miss = core->cache->read_miss_count / 20;
+	uint32_t result = (read_hit > read_miss) ? (read_hit - read_miss) : 0;
+	fprintf(core->files->stats, "read_hit %u\n", result);
+	//fprintf(core->files->stats, "read_hit %d\n", core->cache->read_hit_count - core->cache->read_miss_count/20);
+	uint32_t write_hit = core->cache->write_hit_count;
+	uint32_t write_miss = core->cache->write_miss_count / 20;
+	uint32_t resultw = (write_hit > write_miss) ? (write_hit - write_miss) : 0;
+	fprintf(core->files->stats, "write_hit %d\n", resultw);
+	fprintf(core->files->stats, "read_miss %llu\n", core->cache->read_miss_count/20);
 	fprintf(core->files->stats, "write_miss %llu\n", core->cache->write_miss_count);
 	fprintf(core->files->stats, "decode_stall %llu\n", core->decode_stall_count);
 	fprintf(core->files->stats, "mem_stall %llu\n", core->mem_stall_count);
@@ -173,7 +180,7 @@ void core_instruction_fetch(core_t *core)
 		core->fetch.stalls--;
 		return;
 	}
-	printf("core #%d. FETCH step \n", core->id);
+	//printf("core #%d. FETCH step \n", core->id);
 	core->fetch.instruction = instruction_memory_read(core->imem, core->fetch.pc);
 
 	if (core->fetch.delay_slot)
@@ -323,7 +330,7 @@ void core_instruction_decode(core_t *core)
 		core->decode.stalls--;
 		return;
 	}
-	printf("core #%d. DECODE step instruction %08x\n", core->id, core->decode.instruction);
+	//printf("core #%d. DECODE step instruction %08x\n", core->id, core->decode.instruction);
 	// decode instruction
 	core->fetch.stop = 0;
 	core->decode.imm = INSTRUCTION_PARSE_BITS(core->decode.instruction, 0, INSTRUCTION_12BIT_MASK);
@@ -340,7 +347,7 @@ void core_instruction_decode(core_t *core)
 		if (num_stalls)
 		{
 			// core->fetch.stalls = max(num_stalls, core->fetch.stalls);
-			printf("hazard!!!!!!\n");
+			//printf("hazard!!!!!!\n");
 			core->decode.stalls = max(num_stalls, core->decode.stalls);
 			core->fetch.stop = 1;
 			core->execute.do_work = 1;
@@ -444,7 +451,7 @@ void core_execute(core_t *core)
 		return;
 	}
 
-	printf("core #%d. EX instruction %08x\n", core->id, core->execute.instruction);
+	//printf("core #%d. EX instruction %08x\n", core->id, core->execute.instruction);
 
 	// execute instruction
 	switch (core->execute.opcode)
@@ -528,7 +535,7 @@ void core_memory_access(core_t *core)
 	{
 		return;
 	}
-	printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
+	//printf("core #%d. MEMORY step instruction %08x\n", core->id, core->memory_access.instruction);
 	// memory access
 
 	core->write_back.pc = core->memory_access.pc;
@@ -547,18 +554,30 @@ void core_memory_access(core_t *core)
 	{
 		// if the memory access is a read, read the data from memory and replace the mem_data value
 		core->memory_access.action_success = cache_read(core->cache, core->memory_access.alu_result, &core->write_back.mem_data);
-		printf("data: %08x addr: %02x\n", core->write_back.mem_data, core->memory_access.alu_result);
+		if (core->memory_access.action_success) {
+			core->cache->read_hit_count++;
+		}
+		else {
+			core->cache->read_miss_count++;
+		}
+		//printf("data: %08x addr: %02x\n", core->write_back.mem_data, core->memory_access.alu_result);
 	}
 	else if (core->memory_access.state == MEM_ACCESS_WRITE)
 	{
 		core->memory_access.action_success = cache_write(core->cache, core->memory_access.alu_result, core->memory_access.rdv);
-		printf("data to write %08x to addr %02x\n", core->memory_access.rdv, core->memory_access.alu_result);
+		if (core->memory_access.action_success) {
+			core->cache->write_hit_count++;
+		}
+		else {
+			core->cache->write_miss_count++;
+		}
+		//printf("data to write %08x to addr %02x\n", core->memory_access.rdv, core->memory_access.alu_result);
 	}
 
 	if (!core->memory_access.action_success)
 	{
-		printf("fail!!!!\n");
 		// stall the pipeline
+		core->mem_stall_count++;
 		// core->fetch.stalls = max(1, core->fetch.stalls);
 		core->fetch.stop = 1;
 		core->decode.stalls = max(1, core->decode.stalls);
@@ -568,7 +587,6 @@ void core_memory_access(core_t *core)
 	}
 	if (core->memory_access.action_success)
 	{
-		printf("success!!!!\n");
 		core->memory_access.state = MEM_ACCESS_NONE;
 		core->memory_access.do_work = 0;
 		core->execute.do_work = 1;
@@ -586,7 +604,7 @@ void core_write_back(core_t *core)
 	{
 		core->halted = TRUE;
 	}
-	printf("core #%d. WB step instruction %08x data: %02x r: %d\n", core->id, core->write_back.instruction, core->write_back.mem_data, core->write_back.rd);
+	//printf("core #%d. WB step instruction %08x data: %02x r: %d\n", core->id, core->write_back.instruction, core->write_back.mem_data, core->write_back.rd);
 
 	if (core->write_back.instruction != 0)
 	{
