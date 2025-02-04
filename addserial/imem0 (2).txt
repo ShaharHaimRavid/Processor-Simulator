@@ -1,4 +1,4 @@
-00201FFF #addi R2, R1, 4095 loop counter
+00201FFF #addi R2, R1, 4095 loop example_files
 00401FFF #Load base address 4095 of vector B into R4
 00401001 #4095+1 vector 2 address
 00544000 #result address to R5=4095
@@ -10,5 +10,5 @@
 00401001 #Increment the address for vector B
 00501001 #Increment the address for vector C
 0B492000 #bne 
-00901001 #Decrement the loop counter.
+00901001 #Decrement the loop example_files.
 14000000 #halt

@@ -34,7 +34,7 @@ void core_save(core_t *core)
 		fprintf(core->files->regout, "%08X\n", core->registers[i]);
 	}
 
-	cache_flush_all(core->cache);
+	//cache_flush_all(core->cache);
 	dsram_save(core->cache, core->files->dsram);
 	tsram_save(core->cache, core->files->tsram);
 
