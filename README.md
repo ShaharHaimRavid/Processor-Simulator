@@ -1,56 +1,91 @@
-# CPU Architecture Simulator (Multi-Core)
+# CPU Architecture Simulator (4-Core Multi-Processor System)
 
 ## Overview
 
-This project is a C-based simulation of a **4-core processor architecture**, designed as part of a computer architecture course.
+This project is a C-based simulator of a 4-core CPU architecture, developed as part of a Computer Architecture course. The simulator models a complete multi-core system with a realistic memory hierarchy and execution pipeline.
 
-The simulator models a simplified CPU system including:
-- 4 independent processing cores running in parallel
-- 5-stage instruction pipeline
-- Private cache per core
-- Cache coherence using the MESI protocol
-- Shared main memory with arbitration mechanism
+The system includes 4 independent processing cores running in parallel, each executing its own instruction stream using a custom assembly-like language.
 
-Each core executes a custom assembly-like instruction set and interacts with memory through a simulated cache hierarchy.
+Each core features a 5-stage pipeline, a private cache, and interacts with a shared main memory through a bus arbitration system. Cache coherence between cores is maintained using the MESI protocol.
 
 ---
 
-## Architecture Features
+## Architecture
 
-### Multi-Core System
-- 4 cores operating concurrently
-- Each core has its own register file and instruction stream
-- Core execution is synchronized cycle-by-cycle
+The simulator models the following components:
 
-### Pipeline (5 Stages)
-Each instruction goes through:
-- Fetch
-- Decode
-- Execute
-- Memory Access
-- Write Back
+- 4 processing cores operating concurrently
+- 5-stage instruction pipeline per core (Fetch, Decode, Execute, Memory, Write Back)
+- Private data cache per core
+- Shared main memory
+- Bus arbitration mechanism for memory access coordination
+- MESI cache coherence protocol for maintaining consistency between caches
 
-### Cache System
-- Each core has a private data cache (D-cache)
-- Cache simulation includes:
-  - Read/Write hits and misses
-  - Cache line management
-
-### Memory Consistency
-- MESI coherence protocol ensures consistency between caches
-- Bus arbitration controls memory access conflicts between cores
+Each core runs independently but is synchronized at the cycle level to simulate realistic multi-core behavior.
 
 ---
 
 ## Input
 
-The simulator takes as input:
+The simulator receives as input:
 
-- Assembly-like instruction files for each core
-- Initial memory state file
+- Instruction memory files for each core (`imem0.txt` - `imem3.txt`)
+- Initial main memory state (`memin.txt`)
 
-Example instruction format:
-```asm
-add $r2, $r2, $imm, 1
-blt $zero, $r2, $imm, 100
-halt $zero, $zero, $zero, 0
+Each core executes its own instruction file independently using a custom assembly-like instruction set.
+
+---
+
+## Output
+
+The simulator generates detailed output files describing the full system state after execution.
+
+### Per-Core Outputs
+
+Each core produces:
+
+- Final register state (`regout`)
+- Execution trace (`coretrace`)
+- Cache memory dumps (`dsram`, `tsram`)
+- Performance statistics (`stats`)
+
+### Shared System Outputs
+
+The system also produces:
+
+- Final main memory state (`memout`)
+- Bus activity trace (`bustrace`)
+
+---
+
+## Performance Statistics
+
+Each core reports detailed runtime statistics used to analyze performance and bottlenecks
+
+These metrics are used to evaluate cache efficiency, pipeline stalls, and memory access delays.
+
+---
+
+## Build Instructions
+
+To compile the project using GCC:
+
+gcc *.c -o simulator
+
+---
+
+## Run Instructions
+
+### Default Mode
+
+Runs the simulator using predefined file paths inside the code:
+
+./simulator
+
+### Custom Input Mode
+
+You can provide input and output files manually:
+
+./simulator imem0.txt imem1.txt imem2.txt imem3.txt memin.txt memout.txt regout0.txt regout1.txt regout2.txt regout3.txt core0trace.txt core1trace.txt core2trace.txt core3trace.txt bustrace.txt dsram0.txt dsram1.txt dsram2.txt dsram3.txt tsram0.txt tsram1.txt tsram2.txt tsram3.txt stats0.txt stats1.txt stats2.txt stats3.txt
+
+---
